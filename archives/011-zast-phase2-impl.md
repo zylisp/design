@@ -1,4 +1,4 @@
-# Wave 1 Implementation Specification - Easy Wins
+# Phase 2 Implementation Specification - Easy Wins
 
 **Project**: zast
 **Wave**: 1 of 5
@@ -10,9 +10,9 @@
 
 ## Overview
 
-Wave 1 adds support for basic expressions, statements, types, and declaration specs that follow the same patterns established in Phase 1. These nodes enable handling of variables, assignments, basic operations, and type definitions.
+Phase 2 adds support for basic expressions, statements, types, and declaration specs that follow the same patterns established in Phase 1. These nodes enable handling of variables, assignments, basic operations, and type definitions.
 
-**What you'll be able to handle after Wave 1**:
+**What you'll be able to handle after Phase 2**:
 
 - Variable declarations and assignments
 - Arithmetic and logical operations
@@ -499,7 +499,7 @@ type KeyValueExpr struct {
 **Example**:
 
 ```go
-{x: 10, y: 20}  // In CompositeLit (Wave 3), contains KeyValueExprs
+{x: 10, y: 20}  // In CompositeLit (Phase 4), contains KeyValueExprs
 ```
 
 ---
@@ -986,7 +986,7 @@ var x, y = 1, 2     // (ValueSpec :doc nil :names (...) :type nil :values (...) 
 const Pi = 3.14     // (ValueSpec :doc nil :names ((Ident...)) :type nil :values ((BasicLit...)) :comment nil)
 ```
 
-**Note**: For Phase 1, write `:doc nil` and `:comment nil`. Full comment support comes in Wave 4.
+**Note**: For Phase 1, write `:doc nil` and `:comment nil`. Full comment support comes in Phase 5.
 
 ---
 
@@ -1248,7 +1248,7 @@ func (b *Builder) parseToken(s sexp.SExp) (token.Token, error) {
     case "STRING":
         return token.STRING, nil
 
-    // Operators (Wave 1)
+    // Operators (Phase 2)
     case "ADD":
         return token.ADD, nil
     case "SUB":
@@ -1348,7 +1348,7 @@ Mirror this expansion in `writeToken` in `writer.go`.
 
 ## Part 9: Integration Tests
 
-After implementing all Wave 1 nodes, create comprehensive integration tests:
+After implementing all Phase 2 nodes, create comprehensive integration tests:
 
 ### Test 1: Variables and Arithmetic
 
@@ -1520,7 +1520,7 @@ Update `formStyles` in `sexp/pretty.go` to include new node types:
 var formStyles = map[string]FormStyle{
     // Existing...
 
-    // Wave 1 Expressions
+    // Phase 2 Expressions
     "UnaryExpr":     StyleCompact,
     "BinaryExpr":    StyleCompact,
     "ParenExpr":     StyleCompact,
@@ -1529,7 +1529,7 @@ var formStyles = map[string]FormStyle{
     "SliceExpr":     StyleKeywordPairs,
     "KeyValueExpr":  StyleCompact,
 
-    // Wave 1 Statements
+    // Phase 2 Statements
     "ReturnStmt":    StyleKeywordPairs,
     "AssignStmt":    StyleKeywordPairs,
     "IncDecStmt":    StyleCompact,
@@ -1540,12 +1540,12 @@ var formStyles = map[string]FormStyle{
     "EmptyStmt":     StyleCompact,
     "LabeledStmt":   StyleKeywordPairs,
 
-    // Wave 1 Types
+    // Phase 2 Types
     "ArrayType":     StyleKeywordPairs,
     "MapType":       StyleKeywordPairs,
     "ChanType":      StyleKeywordPairs,
 
-    // Wave 1 Specs
+    // Phase 2 Specs
     "ValueSpec":     StyleKeywordPairs,
     "TypeSpec":      StyleKeywordPairs,
 }
@@ -1574,7 +1574,7 @@ var formStyles = map[string]FormStyle{
 
 ### Documentation
 
-- [ ] Update README with Wave 1 capabilities
+- [ ] Update README with Phase 2 capabilities
 - [ ] Add examples to documentation
 - [ ] Update canonical S-expression format spec
 
@@ -1614,12 +1614,12 @@ var formStyles = map[string]FormStyle{
 
 ---
 
-## Next Steps After Wave 1
+## Next Steps After Phase 2
 
-Once Wave 1 is complete and all tests pass:
+Once Phase 2 is complete and all tests pass:
 
 1. **Update documentation** with new capabilities
-2. **Create Wave 2 specifications** for control flow
+2. **Create Phase 3 specifications** for control flow
 3. **Celebrate** - you've expanded coverage significantly!
 
 ---
