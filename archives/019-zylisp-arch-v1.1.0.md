@@ -1,7 +1,7 @@
 # Zylisp Architecture: Complete System Design
 
-**Version**: 1.1.0  
-**Date**: October 2025  
+**Version**: 1.1.0
+**Date**: October 2025
 **Status**: Architectural Blueprint
 
 ---
@@ -17,7 +17,8 @@
 7. [Reliability Infrastructure](#7-reliability-infrastructure)
 8. [Implementation Roadmap](#8-implementation-roadmap)
 9. [Design Decisions Reference](#9-design-decisions-reference)
-10. [Glossary](#10-glossary)
+10. [Features Pending Additional Research](#features-pending-additional-research)
+11. [Glossary](#11-glossary)
 
 ---
 
@@ -33,27 +34,27 @@ flowchart TD
         CLI[zylisp CLI]
         REPL_CLIENT[REPL Client]
     end
-    
+
     subgraph "REPL Layer"
         REPL_SERVER[REPL Server]
         SUPERVISOR[Worker Supervisor]
         WORKER[Worker Processes]
     end
-    
+
     subgraph "Language Implementation"
         LANG[zylisp/lang<br/>Parser, Interpreter, Compiler]
         ZAST[zylisp/zast<br/>S-expr ↔ Go AST]
     end
-    
+
     subgraph "Reliability Infrastructure"
         RELY[zylisp/rely<br/>Supervision Trees, GenServer]
     end
-    
+
     subgraph "Development Support"
         DESIGN[zylisp/design<br/>Design Docs]
         COVERAGE[zylisp/go-ast-coverage<br/>Test Coverage]
     end
-    
+
     CLI --> REPL_CLIENT
     REPL_CLIENT --> REPL_SERVER
     REPL_SERVER --> SUPERVISOR
@@ -71,41 +72,48 @@ flowchart TD
 ### 1.2 Core Components
 
 #### zylisp/cli
+
 - Command-line interface for developers
 - Manages REPL lifecycle
 - Provides compilation tools
 - Handles terminal I/O
 
 #### zylisp/repl
+
 - nREPL-style server/client architecture
 - Session management
 - Request routing
 - Multi-client support
 
 #### zylisp/lang
+
 - Stage 1 compiler: Zylisp syntax → Core forms
 - Interpreter for fast-path evaluation
 - Stage 2 compiler integration: Core forms → Go code
 - Compilation caching
 
 #### zylisp/zast
+
 - Canonical S-expression format specification
 - Bidirectional Go AST ↔ S-expression conversion
 - The stable "assembly language" for Go
 
 #### zylisp/rely
+
 - OTP-style supervision trees
 - GenServer behavior patterns
 - Process registry
 - Built on github.com/thejerf/suture
 
 #### zylisp/design
+
 - Complete record of design documents
 - Architecture decisions
 - Planning conversations
 - Feature specifications
 
 #### zylisp/go-ast-coverage
+
 - Comprehensive Go language test suite
 - All known Go language forms as .go source files
 - Pre-generated AST archives
@@ -147,12 +155,12 @@ flowchart TD
         ZAST[zylisp/zast<br/>AST Conversion]
         RELY[zylisp/rely<br/>Reliability Infrastructure]
     end
-    
+
     subgraph Support["Supporting Repositories"]
         DESIGN[zylisp/design<br/>Design Documentation]
         COVERAGE[zylisp/go-ast-coverage<br/>Test Coverage]
     end
-    
+
     CLI -->|imports| REPL
     CLI -->|imports| RELY
     REPL -->|imports| LANG
@@ -170,6 +178,7 @@ flowchart TD
 **Purpose**: Developer-facing executable
 
 **Contents**:
+
 ```
 zylisp/cli/
 ├── cmd/
@@ -183,6 +192,7 @@ zylisp/cli/
 ```
 
 **Responsibilities**:
+
 - Manages REPL server lifecycle
 - Creates and manages REPL client
 - Handles terminal I/O and user interaction
@@ -190,6 +200,7 @@ zylisp/cli/
 - CLI tool suite (format, lint, etc.)
 
 **Dependencies**:
+
 - `zylisp/repl` (client only)
 - `zylisp/rely` (for supervision)
 
@@ -198,6 +209,7 @@ zylisp/cli/
 **Purpose**: nREPL-style client/server model
 
 **Contents**:
+
 ```
 zylisp/repl/
 ├── server/
@@ -215,6 +227,7 @@ zylisp/repl/
 ```
 
 **Responsibilities**:
+
 - REPL server with multi-client support
 - Session management and isolation
 - Worker process supervision
@@ -222,6 +235,7 @@ zylisp/repl/
 - Memory monitoring and worker restart
 
 **Dependencies**:
+
 - `zylisp/lang` (all packages)
 - `zylisp/rely` (for supervision)
 
@@ -230,6 +244,7 @@ zylisp/repl/
 **Purpose**: The Zylisp language implementation
 
 **Contents**:
+
 ```
 zylisp/lang/
 ├── parser/
@@ -252,6 +267,7 @@ zylisp/lang/
 ```
 
 **Responsibilities**:
+
 - Stage 1 compilation: Zylisp syntax → Core forms
 - Macro expansion
 - Direct interpretation (fast path)
@@ -259,6 +275,7 @@ zylisp/lang/
 - Compilation caching and plugin management
 
 **Dependencies**:
+
 - `zylisp/zast` (for Go AST conversion)
 
 #### zylisp/zast
@@ -266,6 +283,7 @@ zylisp/lang/
 **Purpose**: Stable Go AST ↔ S-expression conversion layer
 
 **Contents**:
+
 ```
 zylisp/zast/
 ├── spec/
@@ -281,6 +299,7 @@ zylisp/zast/
 ```
 
 **Responsibilities**:
+
 - Define canonical S-expression format
 - Parse S-expressions to Go AST
 - Generate S-expressions from Go AST
@@ -288,10 +307,12 @@ zylisp/zast/
 - Round-trip conversion guarantees
 
 **Dependencies**:
+
 - Standard library only
 - `go/ast`, `go/token`, `go/parser`, `go/printer`
 
 **Characteristics**:
+
 - Stable and rarely changes
 - "Assembly language" for Go
 - Well-tested and reliable
@@ -302,6 +323,7 @@ zylisp/zast/
 **Purpose**: OTP-style reliability infrastructure
 
 **Contents**:
+
 ```
 zylisp/rely/
 ├── supervisor/
@@ -319,6 +341,7 @@ zylisp/rely/
 ```
 
 **Responsibilities**:
+
 - Supervision tree implementation
 - GenServer behavior pattern
 - Named process registry
@@ -327,9 +350,11 @@ zylisp/rely/
 - Multiple restart strategies
 
 **Built on**:
+
 - `github.com/thejerf/suture` (foundation)
 
 **What we add beyond Suture**:
+
 - GenServer behavior pattern
 - Process registry with named processes
 - Synchronous call/reply pattern
@@ -344,6 +369,7 @@ zylisp/rely/
 **Purpose**: Complete design documentation archive
 
 **Contents**:
+
 ```
 zylisp/design/
 ├── architecture/
@@ -368,6 +394,7 @@ zylisp/design/
 ```
 
 **Contents Type**:
+
 - Architecture documents
 - Design decision records (ADRs)
 - Technical specifications
@@ -376,6 +403,7 @@ zylisp/design/
 - Implementation notes
 
 **Purpose**:
+
 - Historical record of all design decisions
 - Context for why things are the way they are
 - Reference for future development
@@ -386,6 +414,7 @@ zylisp/design/
 **Purpose**: Comprehensive Go language test coverage
 
 **Contents**:
+
 ```
 zylisp/go-ast-coverage/
 ├── source/
@@ -422,6 +451,7 @@ zylisp/go-ast-coverage/
 ```
 
 **Purpose**:
+
 - Provides comprehensive test cases for zast implementation
 - All known Go language forms as compilable source
 - Pre-generated AST representations for comparison
@@ -429,6 +459,7 @@ zylisp/go-ast-coverage/
 - Reference for implementing new features
 
 **Usage**:
+
 ```go
 // In zast tests
 func TestRoundTrip(t *testing.T) {
@@ -436,13 +467,13 @@ func TestRoundTrip(t *testing.T) {
     for _, tc := range testCases {
         // Parse Go source to AST
         goAST := parseGoSource(tc.Source)
-        
+
         // Convert to S-expression
         sexpr := zast.Generate(goAST)
-        
+
         // Convert back to AST
         reconstructed := zast.Parse(sexpr)
-        
+
         // Compare with archived AST
         if !astEqual(reconstructed, tc.ArchivedAST) {
             t.Errorf("Round trip failed for %s", tc.Name)
@@ -479,6 +510,7 @@ zylisp/go-ast-coverage
 ```
 
 **Key Properties**:
+
 - ✅ Zero circular dependencies
 - ✅ Clear layering
 - ✅ Reusable components
@@ -493,31 +525,31 @@ zylisp/go-ast-coverage
 ```mermaid
 flowchart TD
     START[Start Compilation] --> REPL_CHECK{In REPL?}
-    
+
     REPL_CHECK -->|Yes| REPL_PARSE[Parse to Surface Forms]
     REPL_CHECK -->|No| FILE_READ[Read Source File]
-    
+
     %% REPL Path
     REPL_PARSE --> REPL_EXPAND[Macro Expand to Core Forms]
     REPL_EXPAND --> REPL_SIMPLE{Simple Expression?}
-    
+
     REPL_SIMPLE -->|Yes| REPL_INTERPRET[Tier 1: Direct Interpret<br/>~1ms]
     REPL_SIMPLE -->|No| REPL_CACHED{Already Cached?}
-    
+
     REPL_CACHED -->|Yes| REPL_EXEC_CACHED[Tier 2: Execute Cached<br/>~0ms]
     REPL_CACHED -->|No| REPL_COMPILE[Tier 3: Compile to Go]
-    
+
     REPL_COMPILE --> REPL_TO_AST[Core Forms → Go AST]
     REPL_TO_AST --> REPL_TO_GO[Go AST → Go Source]
     REPL_TO_GO --> REPL_BUILD[Build Plugin<br/>50-200ms]
     REPL_BUILD --> REPL_LOAD[Load Plugin]
     REPL_LOAD --> REPL_CACHE[Cache Function]
     REPL_CACHE --> REPL_EXEC[Execute]
-    
+
     REPL_INTERPRET --> REPL_RESULT[Return Result]
     REPL_EXEC_CACHED --> REPL_RESULT
     REPL_EXEC --> REPL_RESULT
-    
+
     %% File-Based Path
     FILE_READ --> FILE_PARSE[Parse to Surface Forms]
     FILE_PARSE --> FILE_EXPAND[Macro Expand to Core Forms]
@@ -526,7 +558,7 @@ flowchart TD
     FILE_TO_GO --> FILE_WRITE[Write .go File]
     FILE_WRITE --> FILE_BUILD[Go Build Binary]
     FILE_BUILD --> FILE_RESULT[Binary Output]
-    
+
     style REPL_INTERPRET fill:#bfb
     style REPL_EXEC_CACHED fill:#bbf
     style REPL_BUILD fill:#fbb
@@ -539,11 +571,13 @@ flowchart TD
 **Location**: `zylisp/lang/parser`
 
 **Process**:
+
 1. **Lexer** (`lexer.go`): Source text → Tokens
 2. **Reader** (`reader.go`): Tokens → Surface forms
 3. **Expander** (`expander.go`): Surface forms → Core forms (macro expansion)
 
 **Input**: Zylisp source code
+
 ```zylisp
 (deffunc add (a b)
   (:args integer integer)
@@ -552,12 +586,14 @@ flowchart TD
 ```
 
 **Output**: Core forms (canonical S-expressions)
+
 ```lisp
 (deffunc add (a b)
   (:args integer integer)
   (:return integer)
   (+ a b))
 ```
+
 *Note: In this simple case, surface and core forms are identical. More complex macros would show differences.*
 
 #### Stage 2: Core Forms → Go Code
@@ -565,11 +601,13 @@ flowchart TD
 **Location**: `zylisp/lang/compiler` + `zylisp/zast`
 
 **Process**:
+
 1. **Analyze** (`compiler/analyze.go`): Core forms → Go AST (uses zast types)
 2. **Emit** (`compiler/emit.go`): Go AST → Go source text
 3. **Build** (Go toolchain): Go source → Binary/Plugin
 
 **Input**: Core forms
+
 ```lisp
 (deffunc add (a b)
   (:args integer integer)
@@ -578,6 +616,7 @@ flowchart TD
 ```
 
 **Intermediate**: Go AST (via zast)
+
 ```lisp
 (FuncDecl
   :name (Ident :name "add")
@@ -593,6 +632,7 @@ flowchart TD
 ```
 
 **Output**: Go source code
+
 ```go
 func add(a int, b int) int {
     return a + b
@@ -604,6 +644,7 @@ func add(a int, b int) int {
 #### Tier 1: Direct Interpretation
 
 **When Used**:
+
 - Literals: `42`, `"hello"`, `true`
 - Simple arithmetic: `(+ 1 2)`
 - Variable lookups
@@ -614,6 +655,7 @@ func add(a int, b int) int {
 **Performance**: ~1ms
 
 **Example**:
+
 ```zylisp
 (+ 1 2)  ; Direct evaluation → 3
 ```
@@ -621,12 +663,14 @@ func add(a int, b int) int {
 #### Tier 2: Cached Compilation
 
 **When Used**:
+
 - Previously compiled functions
 - Precompiled standard library
 
 **Implementation**: `zylisp/lang/cache/`
 
 **Process**:
+
 1. Check cache for function signature
 2. If found, execute directly
 3. No compilation needed
@@ -634,18 +678,20 @@ func add(a int, b int) int {
 **Performance**: ~0ms (direct function call)
 
 **Example**:
+
 ```zylisp
 (deffunc square (x)
   (:args integer)
   (:return integer)
   (* x x))  ; First time: compile & cache
-  
+
 (square 5)  ; Subsequent: cached execution
 ```
 
 #### Tier 3: JIT Compilation
 
 **When Used**:
+
 - Complex expressions not in cache
 - New function definitions
 - Dynamic code generation
@@ -653,6 +699,7 @@ func add(a int, b int) int {
 **Implementation**: Full compilation pipeline
 
 **Process**:
+
 1. Core forms → Go AST (via `zast`)
 2. Go AST → Go source
 3. `go build -buildmode=plugin`
@@ -669,6 +716,7 @@ func add(a int, b int) int {
 **Command**: `zylisp compile myfile.zl`
 
 **Process**:
+
 1. Read source file
 2. Parse to surface forms
 3. Expand macros to core forms
@@ -680,6 +728,7 @@ func add(a int, b int) int {
 **Output**: Standalone executable
 
 **No REPL-specific optimizations**:
+
 - No tiered execution
 - No caching
 - No plugin loading
@@ -694,6 +743,7 @@ func add(a int, b int) int {
 The canonical S-expression format provides a 1:1 bidirectional mapping between Go AST nodes and S-expressions. This format serves as Zylisp's intermediate representation.
 
 **Design Principles**:
+
 1. **Faithful Representation**: Every field in Go's AST is represented
 2. **Position Preservation**: All `token.Pos` information is maintained
 3. **Self-Contained**: FileSet information is embedded
@@ -709,6 +759,7 @@ The canonical S-expression format provides a 1:1 bidirectional mapping between G
 ```
 
 **FileSet Representation**:
+
 ```lisp
 (FileSet
   :base 1
@@ -723,6 +774,7 @@ The canonical S-expression format provides a 1:1 bidirectional mapping between G
 ### 4.3 Core Syntax Rules
 
 **Node Format**:
+
 ```lisp
 (NodeType :field1 value1 :field2 value2 ...)
 ```
@@ -736,6 +788,7 @@ The canonical S-expression format provides a 1:1 bidirectional mapping between G
 ### 4.4 Phase 1 Node Types
 
 #### File
+
 ```lisp
 (File
   :package <pos>
@@ -748,11 +801,13 @@ The canonical S-expression format provides a 1:1 bidirectional mapping between G
 ```
 
 #### Ident
+
 ```lisp
 (Ident :namepos <pos> :name <string> :obj <Object>)
 ```
 
 #### BasicLit
+
 ```lisp
 (BasicLit :valuepos <pos> :kind <token> :value <string>)
 ```
@@ -760,6 +815,7 @@ The canonical S-expression format provides a 1:1 bidirectional mapping between G
 Token kinds: `INT`, `FLOAT`, `IMAG`, `CHAR`, `STRING`
 
 #### GenDecl
+
 ```lisp
 (GenDecl
   :doc <CommentGroup>
@@ -773,6 +829,7 @@ Token kinds: `INT`, `FLOAT`, `IMAG`, `CHAR`, `STRING`
 Tokens: `IMPORT`, `CONST`, `TYPE`, `VAR`
 
 #### FuncDecl
+
 ```lisp
 (FuncDecl
   :doc <CommentGroup>
@@ -789,6 +846,7 @@ See `zylisp/zast/spec/format.md` for complete specification of all node types.
 ### 4.5 Example: Hello World
 
 **Go Source**:
+
 ```go
 package main
 
@@ -800,6 +858,7 @@ func main() {
 ```
 
 **Canonical S-Expression** (abbreviated):
+
 ```lisp
 (Program
   :fileset (FileSet :base 1
@@ -877,6 +936,7 @@ sequenceDiagram
 ### 5.2 Multi-Client Support
 
 **Features**:
+
 - Multiple clients can connect to single server
 - Session isolation per client
 - Shared standard library across sessions
@@ -885,16 +945,19 @@ sequenceDiagram
 ### 5.3 Server Components
 
 **Session Manager**:
+
 - Creates isolated evaluation environments
 - Tracks client connections
 - Routes requests to correct session
 
 **Worker Pool**:
+
 - Maintains pool of worker processes
 - Load balancing across workers
 - Health monitoring
 
 **Supervisor**:
+
 - Monitors worker memory usage
 - Restarts workers when necessary
 - Handles worker crashes gracefully
@@ -908,6 +971,7 @@ sequenceDiagram
 Go plugins (`-buildmode=plugin`) **cannot be unloaded** once loaded. This creates memory leaks in long-running REPL sessions.
 
 **Why plugins can't be unloaded**:
+
 - Compiled as shared libraries (`.so` files)
 - Loaded into process address space
 - Go runtime doesn't support unloading
@@ -921,21 +985,22 @@ graph TD
     W1[Worker Process 1<br/>Disposable]
     W2[Worker Process 2<br/>Disposable]
     W3[Worker Process N<br/>Disposable]
-    
+
     S -->|IPC: Unix Socket| W1
     S -->|IPC: Unix Socket| W2
     S -->|IPC: Unix Socket| W3
-    
+
     S -.monitors.-> W1
     S -.monitors.-> W2
     S -.monitors.-> W3
-    
+
     S -.kills & restarts.-> W1
     S -.kills & restarts.-> W2
     S -.kills & restarts.-> W3
 ```
 
 **Why Process Isolation Works**:
+
 - ✅ True memory isolation
 - ✅ Can forcibly kill worker
 - ✅ Worker crashes don't affect supervisor
@@ -943,6 +1008,7 @@ graph TD
 - ✅ Actually reclaims plugin memory
 
 **Why Goroutines Don't Work**:
+
 - ❌ Share process address space
 - ❌ Plugins leak in same process
 - ❌ Cannot forcibly kill goroutine
@@ -960,12 +1026,12 @@ func getProcessMemoryMB(pid int) (uint64, error) {
     if err != nil {
         return 0, err
     }
-    
+
     memInfo, err := proc.MemoryInfo()
     if err != nil {
         return 0, err
     }
-    
+
     return memInfo.RSS / 1024 / 1024, nil
 }
 ```
@@ -983,6 +1049,7 @@ func getProcessMemoryMB(pid int) (uint64, error) {
 ### 6.4 Restart Triggers
 
 **Supervisor restarts worker when**:
+
 1. Memory exceeds threshold (e.g., 500MB)
 2. Request count exceeds limit (e.g., 1000 requests)
 3. Worker crashes or becomes unresponsive
@@ -1007,7 +1074,7 @@ func (s *Supervisor) Execute(code string) (string, error) {
     if s.shouldRestart() {
         s.restartWorker()
     }
-    
+
     result, err := s.worker.SendRequest(code)
     s.requestCount++
     return result, err
@@ -1017,17 +1084,17 @@ func (s *Supervisor) shouldRestart() bool {
     if s.requestCount >= s.maxRequests {
         return true
     }
-    
+
     proc, err := process.NewProcess(s.worker.pid)
     if err != nil {
         return true
     }
-    
+
     memInfo, err := proc.MemoryInfo()
     if err != nil {
         return true
     }
-    
+
     return memInfo.RSS / 1024 / 1024 > s.memThresholdMB
 }
 
@@ -1035,7 +1102,7 @@ func (s *Supervisor) restartWorker() {
     if s.worker != nil {
         s.worker.Kill()
     }
-    
+
     s.worker = s.spawnWorker()
     s.requestCount = 0
 }
@@ -1058,6 +1125,7 @@ type Response struct {
 ```
 
 **Benefits**:
+
 - Low latency
 - Process boundary enforcement
 - Simple protocol
@@ -1273,182 +1341,223 @@ func (gs *MyServer) HandleCall(req interface{}) (interface{}, error) {
 
 ---
 
-## 10. Glossary
+## 10. Features Pending Additional Research
+
+### Pattern Matching
+
+TBD
+
+### Data Immutability
+
+#### Core Challenges
+
+Language-Level Issues:
+
+- No Immutability Primitives
+- Reference Semantics for Collections
+- Value vs Reference Confusion
+
+Practical Runtime Issues:
+
+- Garbage Collection Pressure
+- Memory Overhead
+- Closure Capture Semantics
+
+#### Potential Solutions
+
+- Structural Sharing with Persistent Data Structures
+- Opaque Type Wrappers
+- Copy-on-Write Strategies
+- Code Generation and Tooling
+
+#### Areas for Additional Research
+
+- Performance Benchmarking
+- Persistent Data Structure Implementations
+- Thread Safety and Concurrency
+- Interop with Go Ecosystem
+- Memory Management Strategies
+- Formal Verification
+- Language Feature Investigation
+
+---
+
+## 11. Glossary
 
 ### Compilation Terms
 
-**AST (Abstract Syntax Tree)**  
+**AST (Abstract Syntax Tree)**
 Tree representation of source code structure. In Zylisp, specifically refers to Go's AST from the `go/ast` package.
 
-**Canonical S-Expression**  
+**Canonical S-Expression**
 The normalized, fully-expanded S-expression format that serves as Zylisp's intermediate representation. All macros have been expanded, all syntactic sugar removed.
 
-**Core Forms**  
+**Core Forms**
 Synonym for canonical S-expressions. The normalized representation after macro expansion. Called "core" because these are the core language constructs.
 
-**Go AST**  
+**Go AST**
 The Abstract Syntax Tree representation from Go's `go/ast` package. The target of Stage 2 compilation.
 
-**IR (Intermediate Representation)**  
+**IR (Intermediate Representation)**
 Standard compiler terminology for the form between source and target languages. In Zylisp, the IR is the canonical S-expression format.
 
-**Lisp-1**  
+**Lisp-1**
 Namespace design where functions and variables share the same namespace (as in Scheme, Clojure, and LFE). Contrasts with Lisp-2 (Common Lisp) which has separate namespaces. Zylisp follows the Lisp-1 design per Robert Virding's recommendations for LFE.
 
-**Macro Expansion**  
+**Macro Expansion**
 The process of transforming surface forms (which may include macros and syntactic sugar) into core forms (which contain only primitive constructs).
 
-**S-Expression (Symbolic Expression)**  
+**S-Expression (Symbolic Expression)**
 A notation for nested list structures, written as `(operator operand1 operand2 ...)`. The fundamental data structure in Lisp languages.
 
-**Stage 1 Compilation**  
+**Stage 1 Compilation**
 The first compilation stage: Zylisp source → Core forms (IR). Handles parsing, macro expansion, and normalization.
 
-**Stage 2 Compilation**  
+**Stage 2 Compilation**
 The second compilation stage: Core forms → Go AST → Go code. Handles code generation and Go compilation.
 
-**Surface Forms**  
+**Surface Forms**
 The parsed S-expressions as they appear in source code, before macro expansion. May include macros, reader macros, and syntactic sugar.
 
-**Surface Syntax**  
+**Surface Syntax**
 What users actually write in `.zl` files. May include macros and syntactic conveniences that get expanded away during compilation.
 
-**Type Annotation**  
+**Type Annotation**
 Optional type information in Zylisp code that specifies types for function parameters, return values, and struct fields. Uses keyword syntax like `:args`, `:return`, and `:field`. Required for Go interop but optional for pure Zylisp code.
 
-**Zylisp Source**  
+**Zylisp Source**
 The textual source code written by users in `.zl` files.
 
 ### REPL Terms
 
-**Cache**  
+**Cache**
 Storage for compiled functions as Go plugins. Allows instant re-execution without recompilation.
 
-**Direct Interpretation**  
+**Direct Interpretation**
 Tier 1 execution: Evaluating simple expressions without compilation. Used for literals and basic operations.
 
-**JIT (Just-In-Time) Compilation**  
+**JIT (Just-In-Time) Compilation**
 Tier 3 execution: Compiling code on-demand during program execution. In Zylisp, happens when an expression is too complex for interpretation and not in the cache.
 
-**nREPL**  
+**nREPL**
 Network REPL protocol originally from Clojure. Allows multiple clients to connect to a single REPL server.
 
-**Plugin**  
+**Plugin**
 A dynamically loaded shared library (`.so` file on Linux/macOS, `.dll` on Windows). Go plugins cannot be unloaded once loaded.
 
-**REPL (Read-Eval-Print Loop)**  
+**REPL (Read-Eval-Print Loop)**
 Interactive programming environment that reads expressions, evaluates them, prints results, and loops.
 
-**Session**  
+**Session**
 An isolated evaluation environment for a single REPL client. Multiple sessions can coexist on the same server.
 
-**Tier 1 Execution**  
+**Tier 1 Execution**
 Direct interpretation of simple expressions. ~1ms latency.
 
-**Tier 2 Execution**  
+**Tier 2 Execution**
 Execution of cached compiled functions. ~0ms latency (direct function call).
 
-**Tier 3 Execution**  
+**Tier 3 Execution**
 JIT compilation and execution. 50-200ms first time, then cached.
 
-**Worker Process**  
+**Worker Process**
 A separate OS process that loads plugins and executes compiled code. Can be killed to reclaim memory.
 
 ### Memory Management Terms
 
-**gopsutil**  
+**gopsutil**
 Cross-platform library for process and system monitoring. Used to monitor worker memory usage.
 
-**IPC (Inter-Process Communication)**  
+**IPC (Inter-Process Communication)**
 Communication between separate processes. Zylisp uses Unix domain sockets for supervisor-worker IPC.
 
-**Memory Leak**  
+**Memory Leak**
 Memory that is allocated but cannot be reclaimed. Go plugins create memory leaks because they cannot be unloaded.
 
-**Process Isolation**  
+**Process Isolation**
 Running code in separate OS processes so one process's memory is completely isolated from another's.
 
-**RSS (Resident Set Size)**  
+**RSS (Resident Set Size)**
 The amount of physical RAM a process is currently using. Used to monitor worker memory usage.
 
-**Supervisor**  
+**Supervisor**
 A process that monitors and manages worker processes. Restarts workers when they crash or exceed memory limits.
 
-**Unix Domain Socket**  
+**Unix Domain Socket**
 A socket for IPC on the same machine. Lower overhead than TCP, provides process boundary.
 
-**Worker**  
+**Worker**
 A disposable process that loads plugins and executes code. Supervised and restarted as needed.
 
 ### Reliability Terms
 
-**Behavior**  
+**Behavior**
 A design pattern or interface that defines how a process should respond to events. GenServer is a behavior.
 
-**Child Specification**  
+**Child Specification**
 Configuration for how a supervisor should start and manage a child process.
 
-**GenServer**  
+**GenServer**
 "Generic Server" behavior pattern from Erlang/OTP. Handles synchronous and asynchronous messages.
 
-**OneForAll**  
+**OneForAll**
 Restart strategy where if any child crashes, all children are restarted.
 
-**OneForOne**  
+**OneForOne**
 Restart strategy where only the crashed child is restarted.
 
-**OTP (Open Telecom Platform)**  
+**OTP (Open Telecom Platform)**
 Erlang's framework for building reliable, fault-tolerant systems. Zylisp adopts OTP patterns via the rely library.
 
-**Process Registry**  
+**Process Registry**
 A system for naming and looking up processes by name rather than PID.
 
-**RestForOne**  
+**RestForOne**
 Restart strategy where a crashed child and all children started after it are restarted.
 
-**Restart Strategy**  
+**Restart Strategy**
 Policy determining which processes to restart when a child crashes.
 
-**SimpleOneForOne**  
+**SimpleOneForOne**
 Restart strategy for dynamic worker pools where all workers are identical.
 
-**Supervision Tree**  
+**Supervision Tree**
 Hierarchical organization of processes where supervisors monitor and restart child processes.
 
-**Suture**  
+**Suture**
 Go library implementing Erlang-style supervision trees. Foundation of zylisp/rely.
 
 ### Repository Terms
 
-**go-ast-coverage**  
+**go-ast-coverage**
 Repository containing comprehensive Go language test cases with pre-generated AST archives.
 
-**rely**  
+**rely**
 Zylisp's reliability infrastructure library. Provides supervision trees, GenServer, and process management.
 
-**zast**  
+**zast**
 Zylisp's AST conversion library. Handles bidirectional conversion between canonical S-expressions and Go AST.
 
 ### Go-Specific Terms
 
-**Go Plugin**  
+**Go Plugin**
 A shared library compiled with `-buildmode=plugin` that can be loaded at runtime using the `plugin` package.
 
-**token.Pos**  
+**token.Pos**
 Integer type in Go's AST representing a position in source code as a byte offset.
 
 ### Architecture Terms
 
-**Circular Dependency**  
+**Circular Dependency**
 When package A imports package B, and package B imports package A (directly or indirectly). Zylisp architecture has zero circular dependencies.
 
-**Clean Architecture**  
+**Clean Architecture**
 Design approach emphasizing separation of concerns, dependency management, and testability.
 
-**Dependency Graph**  
+**Dependency Graph**
 Visual representation of which packages depend on which other packages.
 
-**Layered Architecture**  
+**Layered Architecture**
 Design where components are organized in layers, with each layer depending only on layers below it.
 
 ---
