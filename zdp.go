@@ -712,6 +712,13 @@ func transitionDocument(docPath, newState string) {
 		panic(fmt.Sprintf("Error: File not found: %s", docPath))
 	}
 
+	// Check if document has headers, add them if missing
+	content, _ := os.ReadFile(docPath)
+	if !hasYAMLFrontmatter(string(content)) {
+		fmt.Println("Document missing headers, adding them automatically...")
+		addHeadersToDocument(docPath)
+	}
+
 	// Get current state
 	currentState, err := getCurrentState(docPath)
 	if err != nil {
@@ -737,7 +744,7 @@ func transitionDocument(docPath, newState string) {
 	}
 
 	// Read and update document
-	content, _ := os.ReadFile(docPath)
+	content, _ = os.ReadFile(docPath)
 	newStateTitleCase := getTitleCaseState(newState)
 	updatedContent, err := updateYAML(string(content), newStateTitleCase)
 	if err != nil {
@@ -771,6 +778,13 @@ func moveToMatchHeader(docPath string) {
 	// Validate file exists
 	if _, err := os.Stat(docPath); os.IsNotExist(err) {
 		panic(fmt.Sprintf("Error: File not found: %s", docPath))
+	}
+
+	// Check if document has headers, add them if missing
+	content, _ := os.ReadFile(docPath)
+	if !hasYAMLFrontmatter(string(content)) {
+		fmt.Println("Document missing headers, adding them automatically...")
+		addHeadersToDocument(docPath)
 	}
 
 	// Get state from header
