@@ -1,6 +1,6 @@
 ---
 number: 0007
-title: S-Expression Writer Implementation Specification
+title: "S-Expression Writer Implementation Specification"
 author: Duncan McGreggor
 created: 2025-10-01
 updated: 2025-10-04

@@ -1,6 +1,6 @@
 ---
 number: 0023
-title: Removing Position Tracking from zast
+title: "Removing Position Tracking from zast"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04

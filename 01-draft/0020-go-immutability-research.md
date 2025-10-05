@@ -1,6 +1,6 @@
 ---
 number: 0020
-title: Immutable Data in Go: Challenges and Research Areas
+title: "Immutable Data in Go: Challenges and Research Areas"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04

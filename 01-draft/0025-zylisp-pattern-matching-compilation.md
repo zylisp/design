@@ -1,6 +1,6 @@
 ---
 number: 0025
-title: Zylisp Pattern Matching: Compilation to Go AST
+title: "Zylisp Pattern Matching: Compilation to Go AST"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04

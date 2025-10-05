@@ -1,6 +1,6 @@
 ---
 number: 0021
-title: Tail Call Optimization Approaches for Zylisp
+title: "Tail Call Optimization Approaches for Zylisp"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04

@@ -1,6 +1,6 @@
 ---
 number: 0017
-title: Phase 5 Implementation Specification - Advanced Features
+title: "Phase 5 Implementation Specification - Advanced Features"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04

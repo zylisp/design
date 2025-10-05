@@ -1,6 +1,6 @@
 ---
 number: 0011
-title: Phase 2 Implementation Specification - Easy Wins
+title: "Phase 2 Implementation Specification - Easy Wins"
 author: Duncan McGreggor
 created: 2025-10-03
 updated: 2025-10-04

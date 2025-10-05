@@ -1,6 +1,6 @@
 ---
 number: 0024
-title: Zylisp Error Handling Design Document
+title: "Zylisp Error Handling Design Document"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04

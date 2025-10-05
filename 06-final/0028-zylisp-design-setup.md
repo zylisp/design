@@ -1,6 +1,6 @@
 ---
 number: 0028
-title: Zylisp Design Repository Setup Instructions
+title: "Zylisp Design Repository Setup Instructions"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04
@@ -126,7 +126,7 @@ Each design document includes a YAML frontmatter header with the following field
 ```yaml
 ---
 number: 0001
-title: Full Title of the Proposal
+title: "Full Title of the Proposal"
 author: Author Name(s)
 created: YYYY-MM-DD
 updated: 2025-10-04
@@ -210,7 +210,7 @@ Prepend the following YAML frontmatter to each document:
 ```yaml
 ---
 number: NNNN
-title: Extracted or Inferred Title
+title: "Extracted or Inferred Title"
 author: Extracted Author Name
 created: YYYY-MM-DD
 updated: 2025-10-04
@@ -261,7 +261,7 @@ Create `templates/design-doc-template.md`:
 ```markdown
 ---
 number: NNNN
-title: Short Descriptive Title
+title: "Short Descriptive Title"
 author: Your Name
 created: YYYY-MM-DD
 updated: 2025-10-04

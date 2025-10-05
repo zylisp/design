@@ -1,6 +1,6 @@
 ---
 number: 0029
-title: Instructions for Building zdp.go (Zylisp Design Proposal Tool)
+title: "Instructions for Building zdp.go (Zylisp Design Proposal Tool)"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04
@@ -129,7 +129,7 @@ Documents have YAML frontmatter like this:
 ```yaml
 ---
 number: 0001
-title: Go Lisp Intent
+title: "Go Lisp Intent"
 author: John Doe
 created: 2024-01-15
 updated: 2025-10-04

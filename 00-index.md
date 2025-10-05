@@ -35,15 +35,16 @@
 
 ## Documents by State
 
-### Under Review (02-under-review/)
+### Under Review
+
 - [0013 - Zylisp REPL Architecture & Design Decisions](02-under-review/0013-zylisp-repl-arch.md)
 
 - [0014 - REPL Architecture Addendum: Memory Management & Process Supervision](02-under-review/0014-repl-addendum-memory-mgmt.md)
 - [0019 - Zylisp Architecture: Complete System Design](02-under-review/0019-zylisp-arch-v1.1.0.md)
 - [0024 - Zylisp Error Handling Design Document](02-under-review/0024-zylisp-error-handling.md)
-- [9998 - Document Without Headers](02-under-review/9998-no-headers.md)
-- [9999 - Test Transition Document](02-under-review/9999-test-transition.md)
-### Final (06-final/)
+
+### Final
+
 - [0001 - Go-Lisp: A Letter of Intent](06-final/0001-go-lisp-intent.md)
 
 - [0002 - Zylisp Architecture & Project Structure](06-final/0002-zylisp-projects-plans.md)
@@ -64,7 +65,9 @@
 - [0023 - Removing Position Tracking from zast](06-final/0023-zast-position-removal.md)
 - [0028 - Zylisp Design Repository Setup Instructions](06-final/0028-zylisp-design-setup.md)
 - [0029 - Instructions for Building zdp.go (Zylisp Design Proposal Tool)](06-final/0029-zdp-tool-instructions.md)
-### Draft (01-draft/)
+
+### Draft
+
 - [0020 - Immutable Data in Go: Challenges and Research Areas](01-draft/0020-go-immutability-research.md)
 - [0021 - Tail Call Optimization Approaches for Zylisp](01-draft/0021-zylisp-tco-options.md)
 - [0022 - Source Map Architecture for Zylisp](01-draft/0022-source-map-spec.md)

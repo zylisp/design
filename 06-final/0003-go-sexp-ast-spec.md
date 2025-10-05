@@ -1,6 +1,6 @@
 ---
 number: 0003
-title: Canonical S-Expression Format for Go AST
+title: "Canonical S-Expression Format for Go AST"
 author: Duncan McGreggor
 created: 2025-10-01
 updated: 2025-10-04

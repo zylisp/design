@@ -1,6 +1,6 @@
 ---
 number: 0006
-title: AST Builder Implementation Specification
+title: "AST Builder Implementation Specification"
 author: Duncan McGreggor
 created: 2025-10-01
 updated: 2025-10-04
