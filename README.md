@@ -242,6 +242,48 @@ This will:
 
 **Note**: If the file is not in git history, the tool will use fallback values (author="Unknown", dates=current date).
 
+#### Synchronize the index with git-tracked documents
+
+To ensure `00-index.md` is fully synchronized with all documents tracked in git:
+
+```bash
+./zdp update-index
+```
+
+This will:
+
+- **Scan git-tracked documents**: Find all `.md` files in state directories tracked by git
+- **Update the table**: Add missing documents, update changed dates, remove entries for deleted files
+- **Update state sections**: Add missing document links, remove orphaned links
+- **Report changes**: Display what was added, updated, or removed
+
+Example output:
+
+```text
+Synchronizing index with git-tracked documents...
+
+Table Updates:
+  ✓ Added: 0029-zdp-tool-instructions.md
+  ✓ Updated date: 0019-zylisp-arch-v1.1.0.md (2025-10-04 → 2025-10-05)
+
+Section Updates (Final):
+  ✓ Added: 0029-zdp-tool-instructions.md
+
+Section Updates (Draft):
+  ✗ Removed: 9999-test-index-update.md (file not found)
+
+Summary: 4 changes made to index
+```
+
+**Use cases**:
+
+- After manually creating or deleting design documents
+- After using `git mv` to reorganize files
+- To audit and fix index inconsistencies
+- As part of repository maintenance
+
+**Note**: This command is idempotent - running it multiple times is safe and will show "Index is already up to date!" if no changes are needed.
+
 #### List all documents by state
 
 ```bash

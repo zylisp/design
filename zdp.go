@@ -666,38 +666,59 @@ func addToIndexTable(content string, meta *DocMetadata) string {
 
 	docNum, _ := strconv.Atoi(meta.Number)
 	inserted := false
+	inTable := false
+	passedSeparator := false
+	lastDataRowIdx := -1
 
 	for i, line := range lines {
-		// Find the table section
-		if strings.HasPrefix(line, "| ") && strings.Contains(line, " | ") {
-			// Check if this is a data row (not header)
-			if !strings.Contains(line, "---|") {
-				// Extract number from this row
-				parts := strings.Split(line, "|")
-				if len(parts) >= 2 {
-					rowNumStr := strings.TrimSpace(parts[1])
-					rowNum, err := strconv.Atoi(rowNumStr)
-					if err == nil && docNum < rowNum && !inserted {
-						// Insert before this row
-						newRow := fmt.Sprintf("| %s | %s | %s | %s |", meta.Number, meta.Title, meta.State, meta.Updated)
-						result = append(result, newRow)
-						inserted = true
-					}
+		// Detect table start
+		if strings.HasPrefix(line, "| Number | Title") {
+			inTable = true
+		}
+
+		// Detect header separator
+		if inTable && strings.Contains(line, "---|") {
+			passedSeparator = true
+		}
+
+		// Track data rows (after separator, starting with "| " and containing numbers)
+		if inTable && passedSeparator && strings.HasPrefix(line, "| ") {
+			parts := strings.Split(line, "|")
+			if len(parts) >= 2 {
+				rowNumStr := strings.TrimSpace(parts[1])
+				_, err := strconv.Atoi(rowNumStr)
+				if err == nil {
+					lastDataRowIdx = i
+				}
+			}
+		}
+
+		// If we're past the separator and in a data row, check if we should insert before it
+		if inTable && passedSeparator && strings.HasPrefix(line, "| ") && !inserted {
+			parts := strings.Split(line, "|")
+			if len(parts) >= 2 {
+				rowNumStr := strings.TrimSpace(parts[1])
+				rowNum, err := strconv.Atoi(rowNumStr)
+				if err == nil && docNum < rowNum {
+					// Insert before this row
+					newRow := fmt.Sprintf("| %s | %s | %s | %s |", meta.Number, meta.Title, meta.State, meta.Updated)
+					result = append(result, newRow)
+					inserted = true
 				}
 			}
 		}
 
 		result = append(result, line)
 
-		// If we just passed the table header separator, check if table is empty
-		if strings.Contains(line, "---|") && i+1 < len(lines) {
-			nextLine := lines[i+1]
-			if !strings.HasPrefix(nextLine, "| ") && !inserted {
-				// Table is empty or we're at the end, insert here
-				newRow := fmt.Sprintf("| %s | %s | %s | %s |", meta.Number, meta.Title, meta.State, meta.Updated)
-				result = append(result, newRow)
-				inserted = true
-			}
+		// If we just left the table and haven't inserted, append at the end
+		if inTable && !strings.HasPrefix(line, "|") && lastDataRowIdx >= 0 && !inserted {
+			// Insert before this line (after the last data row)
+			newRow := fmt.Sprintf("| %s | %s | %s | %s |", meta.Number, meta.Title, meta.State, meta.Updated)
+			result = result[:len(result)-1]  // Remove current line
+			result = append(result, newRow)  // Add new row
+			result = append(result, line)    // Add back current line
+			inserted = true
+			inTable = false
 		}
 	}
 
@@ -853,6 +874,262 @@ func listDocuments() {
 	}
 }
 
+// IndexEntry represents an entry in the index table
+type IndexEntry struct {
+	Number  string
+	Title   string
+	State   string
+	Updated string
+}
+
+// getGitTrackedDocs returns all git-tracked .md files in state directories
+func getGitTrackedDocs() []string {
+	var allDocs []string
+
+	// Get git-tracked files for each state directory
+	for _, dir := range states {
+		cmd := exec.Command("git", "ls-files", dir+"/*.md")
+		output, err := cmd.Output()
+		if err != nil {
+			continue
+		}
+
+		files := strings.Split(strings.TrimSpace(string(output)), "\n")
+		for _, file := range files {
+			if file != "" {
+				allDocs = append(allDocs, file)
+			}
+		}
+	}
+
+	return allDocs
+}
+
+// parseIndexTableEntries parses the "All Documents by Number" table
+func parseIndexTableEntries(content string) map[string]IndexEntry {
+	entries := make(map[string]IndexEntry)
+	lines := strings.Split(content, "\n")
+
+	inTable := false
+	for _, line := range lines {
+		// Start of table
+		if strings.HasPrefix(line, "| Number | Title") {
+			inTable = true
+			continue
+		}
+
+		// Table separator line
+		if inTable && strings.Contains(line, "---|") {
+			continue
+		}
+
+		// End of table
+		if inTable && !strings.HasPrefix(line, "|") {
+			break
+		}
+
+		// Parse table row
+		if inTable && strings.HasPrefix(line, "|") {
+			parts := strings.Split(line, "|")
+			if len(parts) >= 5 {
+				number := strings.TrimSpace(parts[1])
+				title := strings.TrimSpace(parts[2])
+				state := strings.TrimSpace(parts[3])
+				updated := strings.TrimSpace(parts[4])
+
+				if number != "" && number != "Number" {
+					entries[number] = IndexEntry{
+						Number:  number,
+						Title:   title,
+						State:   state,
+						Updated: updated,
+					}
+				}
+			}
+		}
+	}
+
+	return entries
+}
+
+// getFilesInStateSection extracts document paths from a state section
+func getFilesInStateSection(content, state string) []string {
+	var files []string
+	lines := strings.Split(content, "\n")
+
+	stateHeader := "### " + state
+	inSection := false
+
+	for _, line := range lines {
+		if line == stateHeader {
+			inSection = true
+			continue
+		}
+
+		if inSection && (strings.HasPrefix(line, "### ") || strings.HasPrefix(line, "## ")) {
+			break
+		}
+
+		if inSection && strings.HasPrefix(line, "- [") {
+			// Extract path from markdown link: - [0001 - Title](path/to/file.md)
+			re := regexp.MustCompile(`\]\(([^)]+)\)`)
+			matches := re.FindStringSubmatch(line)
+			if len(matches) > 1 {
+				files = append(files, matches[1])
+			}
+		}
+	}
+
+	return files
+}
+
+// syncIndexTable synchronizes the table with git-tracked documents
+func syncIndexTable(indexContent string, gitDocs []string) (string, []string) {
+	var changes []string
+	currentEntries := parseIndexTableEntries(indexContent)
+
+	// Process each git-tracked document
+	for _, docPath := range gitDocs {
+		meta, err := extractDocMetadata(docPath)
+		if err != nil {
+			changes = append(changes, fmt.Sprintf("  ⚠ Skipped %s: %v", filepath.Base(docPath), err))
+			continue
+		}
+
+		existing, exists := currentEntries[meta.Number]
+
+		if !exists {
+			// Add new entry to table
+			indexContent = addToIndexTable(indexContent, meta)
+			changes = append(changes, fmt.Sprintf("  ✓ Added: %s", filepath.Base(docPath)))
+		} else {
+			// Check if updated date differs
+			if existing.Updated != meta.Updated {
+				indexContent = updateIndexTable(indexContent, meta.Number, meta.State, meta.Updated)
+				changes = append(changes, fmt.Sprintf("  ✓ Updated date: %s (%s → %s)", filepath.Base(docPath), existing.Updated, meta.Updated))
+			}
+			// Check if state differs
+			if existing.State != meta.State {
+				indexContent = updateIndexTable(indexContent, meta.Number, meta.State, meta.Updated)
+				changes = append(changes, fmt.Sprintf("  ✓ Updated state: %s (%s → %s)", filepath.Base(docPath), existing.State, meta.State))
+			}
+		}
+	}
+
+	return indexContent, changes
+}
+
+// syncStateSection synchronizes a state section with its directory
+func syncStateSection(indexContent, state, stateDir string) (string, []string) {
+	var changes []string
+
+	// Get files in directory
+	dirFiles, err := os.ReadDir(stateDir)
+	if err != nil {
+		return indexContent, changes
+	}
+
+	var dirDocs []string
+	for _, file := range dirFiles {
+		if strings.HasSuffix(file.Name(), ".md") {
+			dirDocs = append(dirDocs, filepath.Join(stateDir, file.Name()))
+		}
+	}
+
+	// Get files in section
+	sectionFiles := getFilesInStateSection(indexContent, state)
+
+	// Find files in directory but not in section (need to add)
+	sectionFileSet := make(map[string]bool)
+	for _, f := range sectionFiles {
+		sectionFileSet[f] = true
+	}
+
+	for _, docPath := range dirDocs {
+		if !sectionFileSet[docPath] {
+			// Extract metadata and add to section
+			meta, err := extractDocMetadata(docPath)
+			if err != nil {
+				changes = append(changes, fmt.Sprintf("  ⚠ Skipped %s: %v", filepath.Base(docPath), err))
+				continue
+			}
+			indexContent = addToStateSection(indexContent, docPath, state, meta.Title, meta.Number)
+			changes = append(changes, fmt.Sprintf("  ✓ Added: %s", filepath.Base(docPath)))
+		}
+	}
+
+	// Find files in section but not in directory (need to remove)
+	dirFileSet := make(map[string]bool)
+	for _, f := range dirDocs {
+		dirFileSet[f] = true
+	}
+
+	for _, docPath := range sectionFiles {
+		if !dirFileSet[docPath] {
+			indexContent = removeFromStateSection(indexContent, docPath, state)
+			changes = append(changes, fmt.Sprintf("  ✗ Removed: %s (file not found)", filepath.Base(docPath)))
+		}
+	}
+
+	return indexContent, changes
+}
+
+// updateIndexCommand synchronizes the index with git-tracked documents
+func updateIndexCommand() {
+	fmt.Println("Synchronizing index with git-tracked documents...")
+	fmt.Println()
+
+	// Get all git-tracked docs
+	gitDocs := getGitTrackedDocs()
+
+	// Read current index
+	indexPath := "00-index.md"
+	content, err := os.ReadFile(indexPath)
+	if err != nil {
+		panic(fmt.Sprintf("Error: Failed to read index: %v", err))
+	}
+
+	indexContent := string(content)
+
+	// Sync the table
+	var allChanges []string
+	indexContent, tableChanges := syncIndexTable(indexContent, gitDocs)
+	if len(tableChanges) > 0 {
+		fmt.Println("Table Updates:")
+		for _, change := range tableChanges {
+			fmt.Println(change)
+		}
+		fmt.Println()
+		allChanges = append(allChanges, tableChanges...)
+	}
+
+	// Sync each state section
+	for stateName, stateDir := range states {
+		titleCaseState := getTitleCaseState(stateName)
+		newContent, sectionChanges := syncStateSection(indexContent, titleCaseState, stateDir)
+		indexContent = newContent
+
+		if len(sectionChanges) > 0 {
+			fmt.Printf("Section Updates (%s):\n", titleCaseState)
+			for _, change := range sectionChanges {
+				fmt.Println(change)
+			}
+			fmt.Println()
+			allChanges = append(allChanges, sectionChanges...)
+		}
+	}
+
+	// Write updated index
+	if len(allChanges) > 0 {
+		if err := os.WriteFile(indexPath, []byte(indexContent), 0644); err != nil {
+			panic(fmt.Sprintf("Error: Failed to write index: %v", err))
+		}
+		fmt.Printf("Summary: %d changes made to index\n", len(allChanges))
+	} else {
+		fmt.Println("Index is already up to date!")
+	}
+}
+
 func main() {
 	args := os.Args[1:]
 
@@ -866,6 +1143,12 @@ func main() {
 		if args[0] == "states" {
 			// Mode 4: List supported states
 			listStates()
+			return
+		}
+
+		if args[0] == "update-index" {
+			// Mode 7: Synchronize index with git-tracked documents
+			updateIndexCommand()
 			return
 		}
 
@@ -897,6 +1180,7 @@ func main() {
 	fmt.Println("Usage:")
 	fmt.Println("  zdp.go                           - List all documents by state")
 	fmt.Println("  zdp.go states                    - List supported states")
+	fmt.Println("  zdp.go update-index              - Sync index with git-tracked docs")
 	fmt.Println("  zdp.go <doc.md> <new-state>      - Transition document to new state")
 	fmt.Println("  zdp.go <doc.md>                  - Move document to match header state")
 	fmt.Println("  zdp.go index <doc.md>            - Add document to index")

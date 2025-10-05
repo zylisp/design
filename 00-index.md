@@ -22,7 +22,7 @@
 | 0016 | Phase 4 Implementation Specification - Complex Types | Final | 2025-10-04 |
 | 0017 | Phase 5 Implementation Specification - Advanced Features | Final | 2025-10-04 |
 | 0018 | Phase 6 Implementation Specification - Final Polish & Production Readiness | Final | 2025-10-04 |
-| 0019 | Zylisp Architecture: Complete System Design | Under Review | 2025-10-04 |
+| 0019 | Zylisp Architecture: Complete System Design | Under Review | 2025-10-05 |
 | 0020 | Immutable Data in Go: Challenges and Research Areas | Draft | 2025-10-04 |
 | 0021 | Tail Call Optimization Approaches for Zylisp | Draft | 2025-10-04 |
 | 0022 | Source Map Architecture for Zylisp | Draft | 2025-10-04 |
@@ -32,6 +32,7 @@
 | 0026 | Zylisp Runtime Library Design | Draft | 2025-10-04 |
 | 0027 | Zylisp Forms & Expansion Pipeline - Design Document | Draft | 2025-10-04 |
 | 0028 | Zylisp Design Repository Setup Instructions | Final | 2025-10-04 |
+| 0029 | "Instructions for Building zdp.go (Zylisp Design Proposal Tool)" | Final | 2025-10-04 |
 
 ## Documents by State
 
@@ -74,5 +75,3 @@
 - [0025 - Zylisp Pattern Matching: Compilation to Go AST](01-draft/0025-zylisp-pattern-matching-compilation.md)
 - [0026 - Zylisp Runtime Library Design](01-draft/0026-zylisp-runtime-design.md)
 - [0027 - Zylisp Forms & Expansion Pipeline - Design Document](01-draft/0027-zylisp-forms-design.md)
-
-- [9999 - "Test Index Update"](01-draft/9999-test-index-update.md)
