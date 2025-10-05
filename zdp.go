@@ -659,6 +659,86 @@ func addToIndex(docPath string) error {
 	return nil
 }
 
+// getHighestDocNumber returns the highest document number from the index
+func getHighestDocNumber() (int, error) {
+	indexPath := "00-index.md"
+	content, err := os.ReadFile(indexPath)
+	if err != nil {
+		return 0, err
+	}
+
+	entries := parseIndexTableEntries(string(content))
+	highest := 0
+
+	for numStr := range entries {
+		num, err := strconv.Atoi(numStr)
+		if err == nil && num > highest {
+			highest = num
+		}
+	}
+
+	return highest, nil
+}
+
+// hasNumberPrefix checks if a filename starts with a number prefix
+func hasNumberPrefix(filename string) bool {
+	re := regexp.MustCompile(`^\d{4}-`)
+	return re.MatchString(filename)
+}
+
+// renameWithNumber renames a file to include a number prefix
+func renameWithNumber(filePath string, number int) (string, error) {
+	dir := filepath.Dir(filePath)
+	filename := filepath.Base(filePath)
+
+	// Format number with leading zeros (4 digits)
+	paddedNum := fmt.Sprintf("%04d", number)
+
+	// Create new filename
+	newFilename := fmt.Sprintf("%s-%s", paddedNum, filename)
+	newPath := filepath.Join(dir, newFilename)
+
+	// Rename the file
+	if err := os.Rename(filePath, newPath); err != nil {
+		return "", err
+	}
+
+	return newPath, nil
+}
+
+// isInProjectDir checks if a file is within the design project directory
+func isInProjectDir(filePath string) (bool, error) {
+	// Get absolute path of the file
+	absFilePath, err := filepath.Abs(filePath)
+	if err != nil {
+		return false, err
+	}
+
+	// Get current working directory (should be the project dir)
+	cwd, err := os.Getwd()
+	if err != nil {
+		return false, err
+	}
+
+	// Check if file path starts with project directory
+	return strings.HasPrefix(absFilePath, cwd), nil
+}
+
+// isInStateDir checks if a file is in one of the state directories
+func isInStateDir(filePath string) bool {
+	dir := filepath.Dir(filePath)
+	dirName := filepath.Base(dir)
+
+	// Check if the directory name matches any state directory
+	for _, stateDir := range states {
+		if dirName == stateDir {
+			return true
+		}
+	}
+
+	return false
+}
+
 // addToIndexTable adds a row to the "All Documents by Number" table
 func addToIndexTable(content string, meta *DocMetadata) string {
 	lines := strings.Split(content, "\n")
@@ -1074,6 +1154,130 @@ func syncStateSection(indexContent, state, stateDir string) (string, []string) {
 	return indexContent, changes
 }
 
+// addDocument adds a new document to the repository with full processing
+func addDocument(docPath string) {
+	fmt.Printf("Adding document: %s\n\n", docPath)
+
+	// Validate file exists
+	if _, err := os.Stat(docPath); os.IsNotExist(err) {
+		panic(fmt.Sprintf("Error: File not found: %s", docPath))
+	}
+
+	// Step 1: Number Assignment (FIRST priority)
+	filename := filepath.Base(docPath)
+	if !hasNumberPrefix(filename) {
+		fmt.Println("File does not have a numbered prefix, assigning number...")
+
+		// Get highest number from index
+		highest, err := getHighestDocNumber()
+		if err != nil {
+			panic(fmt.Sprintf("Error: Failed to read index: %v", err))
+		}
+
+		nextNum := highest + 1
+		fmt.Printf("Assigning number: %04d\n", nextNum)
+
+		// Rename file with number
+		newPath, err := renameWithNumber(docPath, nextNum)
+		if err != nil {
+			panic(fmt.Sprintf("Error: Failed to rename file: %v", err))
+		}
+
+		docPath = newPath
+		filename = filepath.Base(docPath)
+		fmt.Printf("Renamed to: %s\n\n", filename)
+	}
+
+	// Step 2: Move to Project Directory
+	inProject, err := isInProjectDir(docPath)
+	if err != nil {
+		panic(fmt.Sprintf("Error: Failed to check project directory: %v", err))
+	}
+
+	if !inProject {
+		fmt.Println("File is outside project directory, moving to project root...")
+
+		cwd, _ := os.Getwd()
+		newPath := filepath.Join(cwd, filename)
+
+		if err := os.Rename(docPath, newPath); err != nil {
+			panic(fmt.Sprintf("Error: Failed to move file to project: %v", err))
+		}
+
+		docPath = newPath
+		fmt.Printf("Moved to: %s\n\n", docPath)
+	}
+
+	// Step 3: State Directory Placement
+	if !isInStateDir(docPath) {
+		fmt.Println("File is not in a state directory, moving to draft (01-draft)...")
+
+		draftDir := "01-draft"
+		newPath := filepath.Join(draftDir, filename)
+
+		// Ensure draft directory exists
+		if err := os.MkdirAll(draftDir, 0755); err != nil {
+			panic(fmt.Sprintf("Error: Failed to create draft directory: %v", err))
+		}
+
+		if err := os.Rename(docPath, newPath); err != nil {
+			panic(fmt.Sprintf("Error: Failed to move file to draft: %v", err))
+		}
+
+		docPath = newPath
+		fmt.Printf("Moved to: %s\n\n", docPath)
+	}
+
+	// Step 4: Add YAML Frontmatter Headers
+	content, _ := os.ReadFile(docPath)
+	if !hasYAMLFrontmatter(string(content)) || strings.Contains(string(content), "number: NNNN") {
+		fmt.Println("Adding/updating YAML frontmatter headers...")
+		addHeadersToDocument(docPath)
+		fmt.Println()
+	}
+
+	// Step 5: Sync State Header with Directory
+	// Get directory-based state
+	dir := filepath.Dir(docPath)
+	dirName := filepath.Base(dir)
+	dirState, exists := dirToState[dirName]
+
+	if exists {
+		// Check current state in document
+		currentState, err := getCurrentState(docPath)
+		if err == nil && normalizeState(currentState) != normalizeState(dirState) {
+			fmt.Printf("State header mismatch, updating to match directory: %s\n", dirState)
+
+			content, _ := os.ReadFile(docPath)
+			updatedContent, err := updateYAML(string(content), dirState)
+			if err != nil {
+				panic(fmt.Sprintf("Error: Failed to update YAML: %v", err))
+			}
+
+			if err := os.WriteFile(docPath, []byte(updatedContent), 0644); err != nil {
+				panic(fmt.Sprintf("Error: Failed to write file: %v", err))
+			}
+			fmt.Println()
+		}
+	}
+
+	// Step 6: Git Add
+	fmt.Println("Adding file to git...")
+	cmd := exec.Command("git", "add", docPath)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		panic(fmt.Sprintf("Error: git add failed: %v\nOutput: %s", err, string(output)))
+	}
+	fmt.Printf("Git staged: %s\n\n", docPath)
+
+	// Step 7: Update Index
+	fmt.Println("Updating index...")
+	if err := addToIndex(docPath); err != nil {
+		panic(fmt.Sprintf("Error: Failed to update index: %v", err))
+	}
+
+	fmt.Printf("\nSuccessfully added document: %s\n", filename)
+}
+
 // updateIndexCommand synchronizes the index with git-tracked documents
 func updateIndexCommand() {
 	fmt.Println("Synchronizing index with git-tracked documents...")
@@ -1158,6 +1362,12 @@ func main() {
 	}
 
 	if len(args) == 2 {
+		if args[0] == "add" {
+			// Mode 8: Add new document with full processing
+			addDocument(args[1])
+			return
+		}
+
 		if args[0] == "index" {
 			// Mode 5: Add document to index
 			if err := addToIndex(args[1]); err != nil {
@@ -1181,6 +1391,7 @@ func main() {
 	fmt.Println("  zdp.go                           - List all documents by state")
 	fmt.Println("  zdp.go states                    - List supported states")
 	fmt.Println("  zdp.go update-index              - Sync index with git-tracked docs")
+	fmt.Println("  zdp.go add <doc.md>              - Add new document with full processing")
 	fmt.Println("  zdp.go <doc.md> <new-state>      - Transition document to new state")
 	fmt.Println("  zdp.go <doc.md>                  - Move document to match header state")
 	fmt.Println("  zdp.go index <doc.md>            - Add document to index")

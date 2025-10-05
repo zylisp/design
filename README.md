@@ -134,11 +134,13 @@ The `zdp` tool (Zylisp Design Proposal) helps manage document state transitions 
 No installation needed. You can run the tool in two ways:
 
 **Option 1: Using the wrapper script (recommended)**
+
 ```bash
 ./zdp [arguments]
 ```
 
 **Option 2: Using Go directly**
+
 ```bash
 go run zdp.go [arguments]
 ```
@@ -146,6 +148,38 @@ go run zdp.go [arguments]
 The examples below use the wrapper script for brevity.
 
 ### Usage
+
+#### Add a document to the repo
+
+To add a new design document with full automated processing:
+
+```bash
+./zdp add <path-to-doc.md>
+```
+
+Example:
+
+```bash
+./zdp add my-new-feature.md
+```
+
+This will automatically:
+
+1. **Assign a document number**: If the file doesn't have a numbered prefix (e.g., `0031-`), the tool finds the highest existing number and assigns the next sequential number
+2. **Move to project directory**: If the file is outside the design repository, it's moved to the project root
+3. **Move to draft state**: If the file isn't in a state directory, it's moved to `01-draft/`
+4. **Add YAML frontmatter**: Adds complete metadata headers if missing (number, title, author, dates, state, etc.)
+5. **Sync state with directory**: Updates the `state:` field to match the file's actual directory location
+6. **Stage in git**: Runs `git add` to stage the file for commit
+7. **Update index**: Adds the document to both the "All Documents by Number" table and the appropriate state section in `00-index.md`
+
+**Use cases**:
+
+- Adding a brand new design document to the repository
+- Importing an existing document from elsewhere
+- Quickly onboarding a document with all necessary metadata and organization
+
+**Note**: This command performs all the setup steps automatically. For documents already in the repository that just need specific updates, use the individual commands (`add-headers`, `index`, etc.) instead.
 
 #### Transition a document to a new state
 
