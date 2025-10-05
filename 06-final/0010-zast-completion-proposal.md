@@ -3,8 +3,8 @@ number: 0010
 title: Building Out Complete zast Support - Implementation Plan
 author: Duncan McGreggor
 created: 2025-10-02
-updated: 2025-10-02
-state: Draft
+updated: 2025-10-04
+state: Final
 supersedes: None
 superseded-by: None
 ---

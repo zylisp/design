@@ -3,8 +3,8 @@ number: 0013
 title: Zylisp REPL Architecture & Design Decisions
 author: Duncan McGreggor
 created: 2025-10-03
-updated: 2025-10-03
-state: Draft
+updated: 2025-10-04
+state: Under Review
 supersedes: None
 superseded-by: None
 ---

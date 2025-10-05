@@ -3,8 +3,8 @@ number: 0009
 title: S-Expression Pretty Printer Implementation Specification
 author: Duncan McGreggor
 created: 2025-10-01
-updated: 2025-10-01
-state: Draft
+updated: 2025-10-04
+state: Final
 supersedes: None
 superseded-by: None
 ---

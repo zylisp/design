@@ -4,7 +4,7 @@ title: Removing Position Tracking from zast
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04
-state: Draft
+state: Final
 supersedes: None
 superseded-by: None
 ---

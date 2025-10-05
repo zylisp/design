@@ -4,7 +4,7 @@ title: Zylisp Design Repository Setup Instructions
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04
-state: Draft
+state: Final
 supersedes: None
 superseded-by: None
 ---
@@ -129,8 +129,8 @@ number: 0001
 title: Full Title of the Proposal
 author: Author Name(s)
 created: YYYY-MM-DD
-updated: YYYY-MM-DD
-state: Draft
+updated: 2025-10-04
+state: Final
 supersedes: None
 superseded-by: None
 ---
@@ -213,8 +213,8 @@ number: NNNN
 title: Extracted or Inferred Title
 author: Extracted Author Name
 created: YYYY-MM-DD
-updated: YYYY-MM-DD
-state: Draft
+updated: 2025-10-04
+state: Final
 supersedes: None
 superseded-by: None
 ---
@@ -264,8 +264,8 @@ number: NNNN
 title: Short Descriptive Title
 author: Your Name
 created: YYYY-MM-DD
-updated: YYYY-MM-DD
-state: Draft
+updated: 2025-10-04
+state: Final
 supersedes: None
 superseded-by: None
 ---
