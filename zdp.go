@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -158,26 +159,21 @@ func extractDocMetadata(docPath string) (*DocMetadata, error) {
 	}, nil
 }
 
-// moveDocument moves a file from source to destination
+// moveDocument moves a file from source to destination using git mv
 func moveDocument(srcPath, dstPath string) error {
-	content, err := os.ReadFile(srcPath)
-	if err != nil {
-		return err
-	}
-
 	// Ensure destination directory exists
 	dstDir := filepath.Dir(dstPath)
 	if err := os.MkdirAll(dstDir, 0755); err != nil {
 		return err
 	}
 
-	// Write to destination
-	if err := os.WriteFile(dstPath, content, 0644); err != nil {
-		return err
+	// Use git mv to preserve history
+	cmd := exec.Command("git", "mv", srcPath, dstPath)
+	if output, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git mv failed: %v\nOutput: %s", err, string(output))
 	}
 
-	// Remove source
-	return os.Remove(srcPath)
+	return nil
 }
 
 // listAllDocuments returns documents grouped by state
@@ -547,17 +543,17 @@ func transitionDocument(docPath, newState string) {
 		panic(fmt.Sprintf("Error: Failed to update YAML: %v", err))
 	}
 
-	// Write updated content to new location
+	// Write updated content back to the same file first
+	if err := os.WriteFile(docPath, []byte(updatedContent), 0644); err != nil {
+		panic(fmt.Sprintf("Error: Failed to update file: %v", err))
+	}
+
+	// Now use git mv to move to new location
 	filename := filepath.Base(docPath)
 	newPath := filepath.Join(newStateDir, filename)
 
-	if err := os.WriteFile(newPath, []byte(updatedContent), 0644); err != nil {
-		panic(fmt.Sprintf("Error: Failed to write to %s: %v", newPath, err))
-	}
-
-	// Remove old file
-	if err := os.Remove(docPath); err != nil {
-		panic(fmt.Sprintf("Error: Failed to remove %s: %v", docPath, err))
+	if err := moveDocument(docPath, newPath); err != nil {
+		panic(fmt.Sprintf("Error: Failed to move document: %v", err))
 	}
 
 	// Update index
