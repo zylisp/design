@@ -280,7 +280,7 @@ func hasYAMLFrontmatter(content string) bool {
 func buildCompleteYAML(metadata map[string]string) string {
 	yaml := "---\n"
 	yaml += fmt.Sprintf("number: %s\n", metadata["number"])
-	yaml += fmt.Sprintf("title: %s\n", metadata["title"])
+	yaml += fmt.Sprintf("title: \"%s\"\n", metadata["title"])
 	yaml += fmt.Sprintf("author: %s\n", metadata["author"])
 	yaml += fmt.Sprintf("created: %s\n", metadata["created"])
 	yaml += fmt.Sprintf("updated: %s\n", metadata["updated"])
