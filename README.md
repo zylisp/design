@@ -196,6 +196,44 @@ This will:
 
 **Note**: When transitioning documents with the other commands, the index is automatically updated. This command is only needed for manually created documents or to fix index inconsistencies.
 
+#### Add or update document headers
+
+If you have a document without YAML frontmatter or with incomplete metadata:
+
+```bash
+go run zdp.go add-headers <path-to-doc.md>
+```
+
+Example:
+
+```bash
+go run zdp.go add-headers 01-draft/0030-new-feature.md
+```
+
+This will:
+
+- Extract metadata from git history:
+  - **author**: First committer of the file
+  - **created**: Date of first commit
+  - **updated**: Date of last commit
+- Extract metadata from the file:
+  - **number**: From filename (e.g., "0030" from "0030-new-feature.md")
+  - **title**: From first `# Heading` in the document, or inferred from filename
+- Add default values for:
+  - **state**: "Draft"
+  - **supersedes**: "None"
+  - **superseded-by**: "None"
+- Preserve any existing metadata values (existing values take precedence)
+- Display which fields were added or updated
+
+**Use cases**:
+
+- Adding headers to documents created before the repository reorganization
+- Completing partial YAML frontmatter
+- Fixing malformed or missing metadata
+
+**Note**: If the file is not in git history, the tool will use fallback values (author="Unknown", dates=current date).
+
 #### List all documents by state
 
 ```bash

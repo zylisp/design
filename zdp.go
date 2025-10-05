@@ -176,6 +176,121 @@ func moveDocument(srcPath, dstPath string) error {
 	return nil
 }
 
+// getGitAuthor extracts the author from git history
+func getGitAuthor(filePath string) string {
+	cmd := exec.Command("git", "log", "--format=%an", "--reverse", filePath)
+	output, err := cmd.Output()
+	if err != nil {
+		return "Unknown"
+	}
+
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(lines) > 0 && lines[0] != "" {
+		return lines[0]
+	}
+	return "Unknown"
+}
+
+// getGitCreatedDate extracts the creation date from git history
+func getGitCreatedDate(filePath string) string {
+	cmd := exec.Command("git", "log", "--format=%ai", "--reverse", filePath)
+	output, err := cmd.Output()
+	if err != nil {
+		return time.Now().Format("2006-01-02")
+	}
+
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(lines) > 0 && lines[0] != "" {
+		// Extract just the date portion (YYYY-MM-DD)
+		parts := strings.Fields(lines[0])
+		if len(parts) > 0 {
+			return parts[0]
+		}
+	}
+	return time.Now().Format("2006-01-02")
+}
+
+// getGitUpdatedDate extracts the last modified date from git history
+func getGitUpdatedDate(filePath string) string {
+	cmd := exec.Command("git", "log", "--format=%ai", "-1", filePath)
+	output, err := cmd.Output()
+	if err != nil {
+		return time.Now().Format("2006-01-02")
+	}
+
+	dateStr := strings.TrimSpace(string(output))
+	if dateStr != "" {
+		// Extract just the date portion (YYYY-MM-DD)
+		parts := strings.Fields(dateStr)
+		if len(parts) > 0 {
+			return parts[0]
+		}
+	}
+	return time.Now().Format("2006-01-02")
+}
+
+// extractNumberFromFilename extracts and pads the number from a filename
+func extractNumberFromFilename(filename string) string {
+	re := regexp.MustCompile(`^(\d+)-`)
+	matches := re.FindStringSubmatch(filename)
+	if len(matches) > 1 {
+		// Pad to 4 digits
+		num := matches[1]
+		for len(num) < 4 {
+			num = "0" + num
+		}
+		return num
+	}
+	return "0000"
+}
+
+// extractTitleFromContent finds the first # heading or infers from filename
+func extractTitleFromContent(content, filename string) string {
+	// Look for first # heading
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "# ") {
+			return strings.TrimSpace(trimmed[2:])
+		}
+	}
+
+	// Infer from filename
+	re := regexp.MustCompile(`^\d+-(.+)\.md$`)
+	matches := re.FindStringSubmatch(filename)
+	if len(matches) > 1 {
+		slug := matches[1]
+		// Convert slug to title case
+		words := strings.Split(slug, "-")
+		for i, word := range words {
+			words[i] = strings.Title(word)
+		}
+		return strings.Join(words, " ")
+	}
+
+	return "Untitled Document"
+}
+
+// hasYAMLFrontmatter checks if content has YAML frontmatter
+func hasYAMLFrontmatter(content string) bool {
+	return strings.HasPrefix(strings.TrimSpace(content), "---\n")
+}
+
+// buildCompleteYAML constructs a complete YAML frontmatter block
+func buildCompleteYAML(metadata map[string]string) string {
+	yaml := "---\n"
+	yaml += fmt.Sprintf("number: %s\n", metadata["number"])
+	yaml += fmt.Sprintf("title: %s\n", metadata["title"])
+	yaml += fmt.Sprintf("author: %s\n", metadata["author"])
+	yaml += fmt.Sprintf("created: %s\n", metadata["created"])
+	yaml += fmt.Sprintf("updated: %s\n", metadata["updated"])
+	yaml += fmt.Sprintf("state: %s\n", metadata["state"])
+	yaml += fmt.Sprintf("supersedes: %s\n", metadata["supersedes"])
+	yaml += fmt.Sprintf("superseded-by: %s\n", metadata["superseded-by"])
+	yaml += "---\n\n"
+	return yaml
+}
+
 // listAllDocuments returns documents grouped by state
 func listAllDocuments() map[string][]string {
 	result := make(map[string][]string)
@@ -202,6 +317,92 @@ func listAllDocuments() map[string][]string {
 	}
 
 	return result
+}
+
+// addHeadersToDocument adds or completes YAML frontmatter for a document
+func addHeadersToDocument(docPath string) {
+	// Validate file exists
+	if _, err := os.Stat(docPath); os.IsNotExist(err) {
+		panic(fmt.Sprintf("Error: File not found: %s", docPath))
+	}
+
+	// Read the file
+	content, err := os.ReadFile(docPath)
+	if err != nil {
+		panic(fmt.Sprintf("Error: Failed to read file: %v", err))
+	}
+
+	contentStr := string(content)
+	filename := filepath.Base(docPath)
+
+	// Extract metadata
+	number := extractNumberFromFilename(filename)
+	title := extractTitleFromContent(contentStr, filename)
+	author := getGitAuthor(docPath)
+	created := getGitCreatedDate(docPath)
+	updated := getGitUpdatedDate(docPath)
+
+	// Build metadata map with defaults
+	metadata := map[string]string{
+		"number":        number,
+		"title":         title,
+		"author":        author,
+		"created":       created,
+		"updated":       updated,
+		"state":         "Draft",
+		"supersedes":    "None",
+		"superseded-by": "None",
+	}
+
+	var newContent string
+	var addedFields []string
+
+	if hasYAMLFrontmatter(contentStr) {
+		// Parse existing YAML and merge with discovered metadata
+		existing, err := parseYAML(contentStr)
+		if err != nil {
+			panic(fmt.Sprintf("Error: Failed to parse existing YAML: %v", err))
+		}
+
+		// Merge: existing values take precedence over discovered ones
+		for key, value := range existing {
+			if value != "" {
+				metadata[key] = value
+			}
+		}
+
+		// Track which fields were added (not in existing)
+		requiredFields := []string{"number", "title", "author", "created", "updated", "state", "supersedes", "superseded-by"}
+		for _, field := range requiredFields {
+			if _, exists := existing[field]; !exists || existing[field] == "" {
+				addedFields = append(addedFields, field)
+			}
+		}
+
+		// Remove old frontmatter and rebuild
+		re := regexp.MustCompile(`(?s)^---\n.*?\n---\n\n?`)
+		bodyContent := re.ReplaceAllString(contentStr, "")
+		newContent = buildCompleteYAML(metadata) + bodyContent
+	} else {
+		// No frontmatter exists, add it
+		addedFields = []string{"number", "title", "author", "created", "updated", "state", "supersedes", "superseded-by"}
+		newContent = buildCompleteYAML(metadata) + contentStr
+	}
+
+	// Write updated content
+	if err := os.WriteFile(docPath, []byte(newContent), 0644); err != nil {
+		panic(fmt.Sprintf("Error: Failed to write file: %v", err))
+	}
+
+	// Report what was done
+	if len(addedFields) > 0 {
+		fmt.Printf("Added/updated headers in %s:\n", filename)
+		for _, field := range addedFields {
+			fmt.Printf("  %s: %s\n", field, metadata[field])
+		}
+	} else {
+		fmt.Printf("All headers already present in %s\n", filename)
+	}
 }
 
 // updateIndex updates the 00-index.md file when a document changes state
@@ -669,6 +870,12 @@ func main() {
 			return
 		}
 
+		if args[0] == "add-headers" {
+			// Mode 6: Add or update YAML frontmatter headers
+			addHeadersToDocument(args[1])
+			return
+		}
+
 		// Mode 1: Transition to new state
 		transitionDocument(args[0], args[1])
 		return
@@ -680,4 +887,5 @@ func main() {
 	fmt.Println("  zdp.go <doc.md> <new-state>      - Transition document to new state")
 	fmt.Println("  zdp.go <doc.md>                  - Move document to match header state")
 	fmt.Println("  zdp.go index <doc.md>            - Add document to index")
+	fmt.Println("  zdp.go add-headers <doc.md>      - Add/update YAML frontmatter headers")
 }
