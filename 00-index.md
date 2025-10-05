@@ -48,7 +48,6 @@
 ### Final
 
 - [0001 - Go-Lisp: A Letter of Intent](06-final/0001-go-lisp-intent.md)
-
 - [0002 - Zylisp Architecture & Project Structure](06-final/0002-zylisp-projects-plans.md)
 - [0003 - Canonical S-Expression Format for Go AST](06-final/0003-go-sexp-ast-spec.md)
 - [0004 - S-Expression Lexer Implementation Specification](06-final/0004-lexer-spec.md)

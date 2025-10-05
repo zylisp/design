@@ -460,6 +460,74 @@ func updateIndexTable(content, docNumber, newState, newUpdated string) string {
 	return strings.Join(result, "\n")
 }
 
+// cleanupSectionFormatting ensures proper spacing around headings and within bullet lists
+func cleanupSectionFormatting(lines []string) []string {
+	var result []string
+
+	for i := 0; i < len(lines); i++ {
+		line := lines[i]
+
+		// Check if this is a section header (### or ##)
+		isHeader := strings.HasPrefix(line, "### ") || strings.HasPrefix(line, "## ")
+
+		if isHeader {
+			// Ensure exactly one blank line before the header
+			// Remove any trailing blank lines from result
+			for len(result) > 0 && result[len(result)-1] == "" {
+				result = result[:len(result)-1]
+			}
+			// Add exactly one blank line (unless this is the very first line)
+			if len(result) > 0 {
+				result = append(result, "")
+			}
+
+			// Add the header
+			result = append(result, line)
+
+			// Ensure exactly one blank line after the header
+			// Skip any blank lines that follow
+			j := i + 1
+			for j < len(lines) && lines[j] == "" {
+				j++
+			}
+			// Add exactly one blank line (unless we're at the end or next is another header)
+			if j < len(lines) && !strings.HasPrefix(lines[j], "### ") && !strings.HasPrefix(lines[j], "## ") {
+				result = append(result, "")
+			}
+			i = j - 1 // Skip the blank lines we just processed
+			continue
+		}
+
+		// Check if this is a bullet item
+		isBullet := strings.HasPrefix(line, "- [")
+
+		if isBullet {
+			// Add the bullet
+			result = append(result, line)
+
+			// Look ahead: if next line is also a bullet, skip any blank lines between them
+			if i+1 < len(lines) {
+				j := i + 1
+				// Skip blank lines
+				for j < len(lines) && lines[j] == "" {
+					j++
+				}
+				// If the next non-blank line is also a bullet, skip the blanks
+				if j < len(lines) && strings.HasPrefix(lines[j], "- [") {
+					i = j - 1 // Skip blank lines between bullets
+					continue
+				}
+			}
+			continue
+		}
+
+		// For non-header, non-bullet lines, just add them
+		result = append(result, line)
+	}
+
+	return result
+}
+
 // removeFromStateSection removes a document from its old state section
 func removeFromStateSection(content, docPath, state string) string {
 	lines := strings.Split(content, "\n")
@@ -531,6 +599,9 @@ func removeFromStateSection(content, docPath, state string) string {
 
 		cleaned = append(cleaned, line)
 	}
+
+	// Apply formatting cleanup
+	cleaned = cleanupSectionFormatting(cleaned)
 
 	return strings.Join(cleaned, "\n")
 }
@@ -609,6 +680,9 @@ func addToStateSection(content, docPath, state, title, number string) string {
 		newLine := fmt.Sprintf("- [%s - %s](%s)", number, title, docPath)
 		result = append(result, newLine)
 	}
+
+	// Apply formatting cleanup
+	result = cleanupSectionFormatting(result)
 
 	return strings.Join(result, "\n")
 }
@@ -1323,14 +1397,40 @@ func updateIndexCommand() {
 		}
 	}
 
-	// Write updated index
-	if len(allChanges) > 0 {
+	// Store original content for comparison
+	originalContent := indexContent
+
+	// Always run formatting cleanup
+	lines := strings.Split(indexContent, "\n")
+	cleanedLines := cleanupSectionFormatting(lines)
+	indexContent = strings.Join(cleanedLines, "\n")
+
+	// Check if cleanup made formatting changes
+	formattingChanged := originalContent != indexContent
+
+	// Report on changes
+	if len(allChanges) == 0 && !formattingChanged {
+		fmt.Println("Index is already up to date!")
+	}
+
+	if formattingChanged {
+		fmt.Println("Formatting Cleanup:")
+		fmt.Println("  ✓ Fixed section heading spacing and bullet list formatting")
+		fmt.Println()
+	}
+
+	// Write updated index if there were any changes
+	if len(allChanges) > 0 || formattingChanged {
 		if err := os.WriteFile(indexPath, []byte(indexContent), 0644); err != nil {
 			panic(fmt.Sprintf("Error: Failed to write index: %v", err))
 		}
-		fmt.Printf("Summary: %d changes made to index\n", len(allChanges))
-	} else {
-		fmt.Println("Index is already up to date!")
+
+		if len(allChanges) > 0 {
+			fmt.Printf("Summary: %d content changes made to index\n", len(allChanges))
+		}
+		if formattingChanged && len(allChanges) == 0 {
+			fmt.Println("Summary: Formatting cleanup applied to index")
+		}
 	}
 }
 
