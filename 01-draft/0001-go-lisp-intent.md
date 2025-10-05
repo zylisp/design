@@ -3,7 +3,7 @@ number: 0001
 title: Go-Lisp: A Letter of Intent
 author: Duncan McGreggor
 created: 2025-10-01
-updated: 2025-10-01
+updated: 2025-10-04
 state: Draft
 supersedes: None
 superseded-by: None

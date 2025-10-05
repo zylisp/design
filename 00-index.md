@@ -4,7 +4,7 @@
 
 | Number | Title | State | Updated |
 |--------|-------|-------|---------|
-| 0001 | Go-Lisp: A Letter of Intent | Draft | 2025-10-01 |
+| 0001 | Go-Lisp: A Letter of Intent | Draft | 2025-10-04 |
 | 0002 | Zylisp Architecture & Project Structure | Draft | 2025-10-01 |
 | 0003 | Canonical S-Expression Format for Go AST | Draft | 2025-10-01 |
 | 0004 | S-Expression Lexer Implementation Specification | Draft | 2025-10-01 |
