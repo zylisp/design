@@ -4,7 +4,7 @@ title: Test Transition Document
 author: Unknown
 created: 2025-10-04
 updated: 2025-10-04
-state: Under Review
+state: Draft
 supersedes: None
 superseded-by: None
 ---
