@@ -1,9 +1,9 @@
 ---
 number: 0019
-title: Zylisp Architecture: Complete System Design
+title: "Zylisp Architecture: Complete System Design"
 author: Duncan McGreggor
 created: 2025-10-04
-updated: 2025-10-04
+updated: 2025-10-05
 state: Under Review
 supersedes: None
 superseded-by: None
