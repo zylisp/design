@@ -74,3 +74,5 @@
 - [0025 - Zylisp Pattern Matching: Compilation to Go AST](01-draft/0025-zylisp-pattern-matching-compilation.md)
 - [0026 - Zylisp Runtime Library Design](01-draft/0026-zylisp-runtime-design.md)
 - [0027 - Zylisp Forms & Expansion Pipeline - Design Document](01-draft/0027-zylisp-forms-design.md)
+
+- [9999 - "Test Index Update"](01-draft/9999-test-index-update.md)

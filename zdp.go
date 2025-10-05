@@ -466,11 +466,11 @@ func removeFromStateSection(content, docPath, state string) string {
 	var result []string
 
 	inStateSection := false
-	stateHeader := "### " + state + " ("
+	stateHeader := "### " + state
 
 	for lineIdx, line := range lines {
 		// Check if we're entering the state section
-		if strings.HasPrefix(line, stateHeader) {
+		if line == stateHeader {
 			inStateSection = true
 			result = append(result, line)
 			continue
@@ -540,9 +540,8 @@ func addToStateSection(content, docPath, state, title, number string) string {
 	lines := strings.Split(content, "\n")
 	var result []string
 
-	stateHeader := "### " + state + " ("
-	stateDirName, _ := getStateDir(state)
-	fullStateHeader := "### " + state + " (" + stateDirName + "/)"
+	stateHeader := "### " + state
+	fullStateHeader := "### " + state
 
 	inStateSection := false
 	sectionExists := false
@@ -551,7 +550,7 @@ func addToStateSection(content, docPath, state, title, number string) string {
 
 	for _, line := range lines {
 		// Check if we're at the state section
-		if strings.HasPrefix(line, stateHeader) {
+		if line == stateHeader {
 			sectionExists = true
 			inStateSection = true
 			result = append(result, line)
