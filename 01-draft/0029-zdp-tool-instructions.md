@@ -76,6 +76,17 @@ Withdrawn
 Superseded
 ```
 
+#### Mode 5: Add Document to Index
+```bash
+go run zdp.go index <relative-path/doc.md>
+```
+
+- Reads the document's metadata (number, title, state)
+- Adds the document to `00-index.md` if not already present
+- Updates both the "All Documents by Number" table and the "Documents by State" section
+- Ensures the document appears in the correct state section based on its header
+- Does nothing if the document is already correctly indexed
+
 ## State Mapping
 
 The program must support these states and their corresponding directories:
@@ -170,6 +181,84 @@ When transitioning a document:
 5. **Write** to the destination directory with the same filename
 6. **Delete** the source file only after successful write
 7. **Preserve** exact formatting and content of the document body
+8. **Update** `00-index.md` to reflect the document's new location and state
+
+### Index File Management
+
+The `00-index.md` file has two main sections that must be kept in sync:
+
+#### Section 1: All Documents by Number
+
+This is a markdown table with columns:
+- Number (4 digits)
+- Title
+- State
+- Updated (date)
+
+Example:
+```markdown
+## All Documents by Number
+
+| Number | Title | State | Updated |
+|--------|-------|-------|---------|
+| 0001 | Go Lisp Intent | Draft | 2024-01-15 |
+| 0015 | Zast Phase3 Impl | Under Review | 2024-03-20 |
+| 0023 | Zast Position Removal | Final | 2024-02-10 |
+```
+
+**Important**: Rows must be sorted by Number in ascending order.
+
+#### Section 2: Documents by State
+
+This section has subsections for each state, with markdown links to documents.
+
+Example:
+```markdown
+## Documents by State
+
+### Draft (01-draft/)
+- [0001 - Go Lisp Intent](01-draft/0001-go-lisp-intent.md)
+
+### Under Review (02-under-review/)
+- [0015 - Zast Phase3 Impl](02-under-review/0015-zast-phase3-impl.md)
+
+### Final (06-final/)
+- [0023 - Zast Position Removal](06-final/0023-zast-position-removal.md)
+```
+
+**Important**: 
+- Only include state subsections that have documents
+- Within each subsection, list documents sorted by number
+- Use the exact format: `- [NUMBER - TITLE](path/to/file.md)`
+
+### Index Update Operations
+
+When transitioning a document (Modes 1 and 2):
+
+1. **Update the table row** in "All Documents by Number":
+   - Find the row by document number
+   - Update the State column to the new state
+   - Update the Updated column to today's date
+   - Keep the row in its position (sorted by number)
+
+2. **Update the state sections** in "Documents by State":
+   - Remove the document from its old state subsection
+   - Add the document to its new state subsection (maintaining number sort order)
+   - If the old state subsection becomes empty, remove the entire subsection
+   - If the new state subsection doesn't exist, create it
+
+When adding to index (Mode 5):
+
+1. **Check "All Documents by Number"**:
+   - Parse the table to find if document number exists
+   - If missing, insert a new row in the correct sorted position
+   - Extract number, title, state, and updated date from document metadata
+
+2. **Check "Documents by State"**:
+   - Find the subsection for the document's current state
+   - Check if the document link is present
+   - If missing, insert in the correct sorted position within that subsection
+   - Create the subsection if it doesn't exist
 
 ### Directory Scanning
 
@@ -218,6 +307,13 @@ var states = map[string]string{
 // - getCurrentState(filePath string) (string, error)
 // - listAllDocuments() map[string][]string
 // - moveDocument(srcPath, dstPath string) error
+// - updateIndex(docPath, oldState, newState string) error
+// - addToIndex(docPath string) error
+// - parseIndexTable(content string) []IndexRow
+// - updateIndexTable(content string, docNumber, newState, newUpdated string) string
+// - removeFromStateSection(content, docPath, state string) string
+// - addToStateSection(content, docPath, state, title string) string
+// - extractDocMetadata(docPath string) (number, title, state, updated string, err error)
 
 func main() {
     // Parse arguments and route to appropriate function
@@ -238,6 +334,15 @@ Create test scenarios for:
 8. ✅ Handling missing files gracefully
 9. ✅ Handling malformed YAML gracefully
 10. ✅ Preserving document content exactly (only updating metadata)
+11. ✅ Index is updated when document transitions between states
+12. ✅ Document is removed from old state section in index
+13. ✅ Document is added to new state section in index
+14. ✅ Table in "All Documents by Number" is updated with new state
+15. ✅ Adding a missing document to index with `index` command
+16. ✅ Running `index` command on already-indexed document (should be no-op)
+17. ✅ State sections maintain alphabetical order by number
+18. ✅ Empty state sections are removed from index
+19. ✅ New state sections are created as needed
 
 ## README.md Updates
 
@@ -289,6 +394,26 @@ go run zdp.go 01-draft/0015-zast-phase3-impl.md
 
 The tool will read the document's `state:` field and move it to the appropriate directory.
 
+#### Add a document to the index
+
+If you've created a new document or need to ensure a document is properly indexed:
+
+```bash
+go run zdp.go index <path-to-doc.md>
+```
+
+Example:
+```bash
+go run zdp.go index 01-draft/0028-new-feature.md
+```
+
+This will:
+- Add the document to the "All Documents by Number" table if missing
+- Add the document to the appropriate state section if missing
+- Do nothing if the document is already properly indexed
+
+**Note**: When transitioning documents with the other commands, the index is automatically updated. This command is only needed for manually created documents or to fix index inconsistencies.
+
 #### List all documents by state
 
 ```bash
@@ -330,6 +455,47 @@ State names are case-insensitive when used on the command line.
 5. **Case Handling**: Normalize state names to lowercase with spaces for comparison
 6. **Error Messages**: Use `panic()` with descriptive error messages as specified
 7. **Directory Traversal**: Use `filepath.Walk` or `os.ReadDir` for scanning directories
+8. **Index Parsing**: Use regex or string manipulation to parse markdown tables and lists
+9. **Index Updates**: Read entire index file, modify in memory, write atomically
+10. **Sorting**: Ensure document numbers are compared as integers (not strings) for proper ordering
+11. **State Section Management**: Track which state sections have documents and only include non-empty sections
+
+### Index File Structure Details
+
+The index file has this general structure:
+
+```markdown
+# Zylisp Design Documents Index
+
+## All Documents by Number
+
+| Number | Title | State | Updated |
+|--------|-------|-------|---------|
+| 0001 | Go Lisp Intent | Draft | 2024-01-15 |
+...
+
+## Documents by State
+
+### Draft (01-draft/)
+- [0001 - Go Lisp Intent](01-draft/0001-go-lisp-intent.md)
+...
+
+### Under Review (02-under-review/)
+- [0015 - Zast Phase3 Impl](02-under-review/0015-zast-phase3-impl.md)
+...
+```
+
+**Parsing Strategy**:
+1. Split file into sections using `## ` headers as delimiters
+2. Parse table section: extract rows between `|---|` header separator and next `##`
+3. Parse state sections: find `### State Name (NN-directory/)` headers and extract bullet lists until next `###` or `##`
+
+**Update Strategy**:
+1. Read entire file into memory
+2. Parse into structured data (table rows + state section maps)
+3. Make modifications to data structure
+4. Rebuild markdown from modified structure
+5. Write back to file atomically
 
 ## Deliverables
 
@@ -350,6 +516,26 @@ Draft
 # Move a document to Under Review
 $ go run zdp.go 01-draft/0015-zast-phase3-impl.md "Under Review"
 Moved 0015-zast-phase3-impl.md from Draft to Under Review
+Updated index
+
+# Verify index was updated
+$ cat 00-index.md
+# Zylisp Design Documents Index
+
+## All Documents by Number
+
+| Number | Title | State | Updated |
+|--------|-------|-------|---------|
+| 0001 | Go Lisp Intent | Draft | 2024-01-15 |
+| 0015 | Zast Phase3 Impl | Under Review | 2024-10-04 |
+
+## Documents by State
+
+### Draft (01-draft/)
+- [0001 - Go Lisp Intent](01-draft/0001-go-lisp-intent.md)
+
+### Under Review (02-under-review/)
+- [0015 - Zast Phase3 Impl](02-under-review/0015-zast-phase3-impl.md)
 
 # List again to verify
 $ go run zdp.go
@@ -367,4 +553,12 @@ Error: Document is already in state "Under Review"
 $ go run zdp.go 02-under-review/0015-zast-phase3-impl.md "InProgress"
 Error: Unsupported state "InProgress". Supported states are:
 Draft, Under Review, Revised, Accepted, Active, Final, Deferred, Rejected, Withdrawn, Superseded
+
+# Create a new document and add to index
+$ go run zdp.go index 01-draft/0028-new-feature.md
+Added 0028-new-feature.md to index
+
+# Try to add again (no-op)
+$ go run zdp.go index 01-draft/0028-new-feature.md
+Document already indexed correctly
 ```
