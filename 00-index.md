@@ -33,16 +33,17 @@
 | 0027 | Zylisp Forms & Expansion Pipeline - Design Document | Draft | 2025-10-04 |
 | 0028 | Zylisp Design Repository Setup Instructions | Final | 2025-10-04 |
 | 0029 | "Instructions for Building zdp.go (Zylisp Design Proposal Tool)" | Final | 2025-10-04 |
+| 0030 | "zylisp/rely: Erlang-Style Supervision for Go" | Under Review | 2025-10-05 |
 
 ## Documents by State
 
 ### Under Review
 
 - [0013 - Zylisp REPL Architecture & Design Decisions](02-under-review/0013-zylisp-repl-arch.md)
-
 - [0014 - REPL Architecture Addendum: Memory Management & Process Supervision](02-under-review/0014-repl-addendum-memory-mgmt.md)
 - [0019 - Zylisp Architecture: Complete System Design](02-under-review/0019-zylisp-arch-v1.1.0.md)
-- [0024 - Zylisp Error Handling Design Document](02-under-review/0024-zylisp-error-handling.md)
+- [0024 - Zylisp Error Handling Design Document](02-under-review/0024-zylisp-error-handling.md)=
+- [0030 - "zylisp/rely: Erlang-Style Supervision for Go"](02-under-review/0030-rely-design-spec.md)
 
 ### Final
 
