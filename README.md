@@ -154,7 +154,7 @@ The examples below use the wrapper script for brevity.
 To add a new design document with full automated processing:
 
 ```bash
-./zdp add <path-to-doc.md>
+./zdp add <path/to/doc.md>
 ```
 
 Example:
