@@ -131,24 +131,32 @@ The `zdp` tool (Zylisp Design Proposal) helps manage document state transitions 
 
 ### Installation
 
-No installation needed. Run directly with Go:
+No installation needed. You can run the tool in two ways:
 
+**Option 1: Using the wrapper script (recommended)**
+```bash
+./zdp [arguments]
+```
+
+**Option 2: Using Go directly**
 ```bash
 go run zdp.go [arguments]
 ```
+
+The examples below use the wrapper script for brevity.
 
 ### Usage
 
 #### Transition a document to a new state
 
 ```bash
-go run zdp.go <path-to-doc.md> <new-state>
+./zdp <path-to-doc.md> <new-state>
 ```
 
 Example:
 
 ```bash
-go run zdp.go 01-draft/0015-zast-phase3-impl.md "Under Review"
+./zdp 01-draft/0015-zast-phase3-impl.md "Under Review"
 ```
 
 This will:
@@ -163,13 +171,13 @@ This will:
 If you've manually updated a document's `state:` field but haven't moved it yet:
 
 ```bash
-go run zdp.go <path-to-doc.md>
+./zdp <path-to-doc.md>
 ```
 
 Example:
 
 ```bash
-go run zdp.go 01-draft/0015-zast-phase3-impl.md
+./zdp 01-draft/0015-zast-phase3-impl.md
 ```
 
 The tool will read the document's `state:` field and move it to the appropriate directory.
@@ -179,13 +187,13 @@ The tool will read the document's `state:` field and move it to the appropriate 
 If you've created a new document or need to ensure a document is properly indexed:
 
 ```bash
-go run zdp.go index <path-to-doc.md>
+./zdp index <path-to-doc.md>
 ```
 
 Example:
 
 ```bash
-go run zdp.go index 01-draft/0029-new-feature.md
+./zdp index 01-draft/0029-new-feature.md
 ```
 
 This will:
@@ -201,13 +209,13 @@ This will:
 If you have a document without YAML frontmatter or with incomplete metadata:
 
 ```bash
-go run zdp.go add-headers <path-to-doc.md>
+./zdp add-headers <path-to-doc.md>
 ```
 
 Example:
 
 ```bash
-go run zdp.go add-headers 01-draft/0030-new-feature.md
+./zdp add-headers 01-draft/0030-new-feature.md
 ```
 
 This will:
@@ -237,7 +245,7 @@ This will:
 #### List all documents by state
 
 ```bash
-go run zdp.go
+./zdp
 ```
 
 This displays all documents organized by their current state.
@@ -245,7 +253,7 @@ This displays all documents organized by their current state.
 #### List supported states
 
 ```bash
-go run zdp.go states
+./zdp states
 ```
 
 This shows all valid state names that can be used.
@@ -269,8 +277,8 @@ State names are case-insensitive when used on the command line.
 
 When creating a new design document:
 
-1. Use the template in `templates/design-doc-template.md`
+1. Use the template in `templates/design-doc.md`
 2. Assign the next available document number
 3. Place the document in `01-draft/`
-4. Add the document to the index: `go run zdp.go index 01-draft/NNNN-your-doc.md`
-5. As the document progresses, use `zdp` to transition it: `go run zdp.go 01-draft/NNNN-your-doc.md "Under Review"`
+4. Add the document to the index: `./zdp index 01-draft/NNNN-your-doc.md`
+5. As the document progresses, use `zdp` to transition it: `./zdp 01-draft/NNNN-your-doc.md "Under Review"`

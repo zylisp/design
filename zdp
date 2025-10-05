@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Wrapper script for zdp.go - Zylisp Design Proposal tool
+
+go run zdp.go "$@"
