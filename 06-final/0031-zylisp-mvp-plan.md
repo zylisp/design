@@ -3,16 +3,16 @@ number: 0031
 title: "Zylisp MVP Development Plan"
 author: Unknown
 created: 2025-10-05
-updated: 2025-10-05
-state: Active
+updated: 2025-10-06
+state: Final
 supersedes: None
 superseded-by: None
 ---
 
 # Zylisp MVP Development Plan
 
-**Version**: 1.0.0  
-**Date**: October 5, 2025  
+**Version**: 1.0.0
+**Date**: October 5, 2025
 **Target**: Working REPL for language experimentation
 
 ---
@@ -72,6 +72,7 @@ We want to be able to:
    - Read input → Eval → Print → Loop
 
 **Core Language Features (MVP):**
+
 - Integer arithmetic: `+`, `-`, `*`, `/`
 - Variable definition: `define`
 - Lambda functions: `lambda`
@@ -97,6 +98,7 @@ We want to be able to:
 - ❌ Standard library beyond primitives
 
 **Why save these for later?**
+
 - We need a working REPL to experiment with language design
 - These features require the basic interpreter to work first
 - Each can be added incrementally once we have the foundation
@@ -232,6 +234,7 @@ SExpr:  List([Symbol("+"), Number(1), Number(2)])
 ```
 
 **Handles:**
+
 - Lists: `(+ 1 2)`
 - Nested lists: `(+ (* 2 3) 4)`
 - Atoms: `42`, `hello`, `"string"`
@@ -253,6 +256,7 @@ func (e *Env) Extend() *Env  // Create child environment
 ```
 
 **Used for:**
+
 - Global definitions: `(define x 42)`
 - Function parameters: `(lambda (a b) (+ a b))`
 - Lexical scoping
@@ -264,18 +268,18 @@ func (e *Env) Extend() *Env  // Create child environment
 ```go
 func Eval(expr SExpr, env *Env) (SExpr, error) {
     switch e := expr.(type) {
-    
+
     case Number, String, Bool, Nil:
         return e, nil  // Self-evaluating
-    
+
     case Symbol:
         return env.Lookup(e.Name)
-    
+
     case List:
         if len(e.Elements) == 0 {
             return Nil{}, nil
         }
-        
+
         // Special forms
         first := e.Elements[0]
         if sym, ok := first.(Symbol); ok {
@@ -290,7 +294,7 @@ func Eval(expr SExpr, env *Env) (SExpr, error) {
                 return e.Elements[1], nil
             }
         }
-        
+
         // Function application
         return evalApply(e, env)
     }
@@ -332,19 +336,19 @@ func (s *Server) Eval(source string) (string, error) {
     if err != nil {
         return "", err
     }
-    
+
     // Parse
     expr, err := reader.Read(tokens)
     if err != nil {
         return "", err
     }
-    
+
     // Evaluate
     result, err := interpreter.Eval(expr, s.env)
     if err != nil {
         return "", err
     }
-    
+
     return result.String(), nil
 }
 ```
@@ -357,27 +361,27 @@ func (s *Server) Eval(source string) (string, error) {
 func main() {
     server := server.NewServer()
     scanner := bufio.NewScanner(os.Stdin)
-    
+
     fmt.Println("Zylisp REPL v0.0.1")
     fmt.Println("Type expressions and press Enter")
     fmt.Println()
-    
+
     for {
         fmt.Print("> ")
-        
+
         if !scanner.Scan() {
             break
         }
-        
+
         line := scanner.Text()
         if line == "" {
             continue
         }
-        
+
         if line == "exit" || line == "quit" {
             break
         }
-        
+
         result, err := server.Eval(line)
         if err != nil {
             fmt.Printf("Error: %v\n", err)
@@ -385,7 +389,7 @@ func main() {
             fmt.Println(result)
         }
     }
-    
+
     fmt.Println("\nGoodbye!")
 }
 ```
@@ -499,7 +503,7 @@ func (l List) String() string {
     if len(l.Elements) == 0 {
         return "()"
     }
-    
+
     result := "("
     for i, elem := range l.Elements {
         if i > 0 {
@@ -555,11 +559,11 @@ func TestNumberString(t *testing.T) {
         {-17, "-17"},
         {0, "0"},
     }
-    
+
     for _, tt := range tests {
         n := Number{Value: tt.value}
         if got := n.String(); got != tt.expected {
-            t.Errorf("Number(%d).String() = %q, want %q", 
+            t.Errorf("Number(%d).String() = %q, want %q",
                 tt.value, got, tt.expected)
         }
     }
@@ -574,7 +578,7 @@ func TestSymbolString(t *testing.T) {
         {"+", "+"},
         {"lambda", "lambda"},
     }
-    
+
     for _, tt := range tests {
         s := Symbol{Name: tt.name}
         if got := s.String(); got != tt.expected {
@@ -592,7 +596,7 @@ func TestBoolString(t *testing.T) {
         {true, "true"},
         {false, "false"},
     }
-    
+
     for _, tt := range tests {
         b := Bool{Value: tt.value}
         if got := b.String(); got != tt.expected {
@@ -641,7 +645,7 @@ func TestListString(t *testing.T) {
             "(+ (* 2 3) 4)",
         },
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             if got := tt.list.String(); got != tt.expected {
@@ -754,30 +758,30 @@ func (l *Lexer) Tokenize() ([]Token, error) {
     for {
         tok := l.nextToken()
         l.tokens = append(l.tokens, tok)
-        
+
         if tok.Type == EOF {
             break
         }
-        
+
         if tok.Type == ILLEGAL {
             return nil, fmt.Errorf("illegal token at line %d, col %d: %q",
                 tok.Line, tok.Col, tok.Value)
         }
     }
-    
+
     return l.tokens, nil
 }
 
 // nextToken returns the next token
 func (l *Lexer) nextToken() Token {
     l.skipWhitespaceAndComments()
-    
+
     if l.isAtEnd() {
         return l.makeToken(EOF, "")
     }
-    
+
     ch := l.peek()
-    
+
     switch ch {
     case '(':
         return l.makeSingleCharToken(LPAREN)
@@ -786,15 +790,15 @@ func (l *Lexer) nextToken() Token {
     case '"':
         return l.scanString()
     }
-    
+
     if isDigit(ch) || (ch == '-' && l.peekNext() != 0 && isDigit(l.peekNext())) {
         return l.scanNumber()
     }
-    
+
     if isSymbolStart(ch) {
         return l.scanSymbol()
     }
-    
+
     return l.makeToken(ILLEGAL, string(ch))
 }
 
@@ -802,7 +806,7 @@ func (l *Lexer) nextToken() Token {
 func (l *Lexer) skipWhitespaceAndComments() {
     for !l.isAtEnd() {
         ch := l.peek()
-        
+
         if ch == ';' {
             // Skip comment to end of line
             for !l.isAtEnd() && l.peek() != '\n' {
@@ -810,12 +814,12 @@ func (l *Lexer) skipWhitespaceAndComments() {
             }
             continue
         }
-        
+
         if isWhitespace(ch) {
             l.advance()
             continue
         }
-        
+
         break
     }
 }
@@ -824,15 +828,15 @@ func (l *Lexer) skipWhitespaceAndComments() {
 func (l *Lexer) scanNumber() Token {
     start := l.pos
     startCol := l.col
-    
+
     if l.peek() == '-' {
         l.advance()
     }
-    
+
     for !l.isAtEnd() && isDigit(l.peek()) {
         l.advance()
     }
-    
+
     value := l.input[start:l.pos]
     return Token{Type: NUMBER, Value: value, Line: l.line, Col: startCol}
 }
@@ -841,18 +845,18 @@ func (l *Lexer) scanNumber() Token {
 func (l *Lexer) scanSymbol() Token {
     start := l.pos
     startCol := l.col
-    
+
     for !l.isAtEnd() && isSymbolChar(l.peek()) {
         l.advance()
     }
-    
+
     value := l.input[start:l.pos]
-    
+
     // Check for boolean literals
     if value == "true" || value == "false" {
         return Token{Type: BOOL, Value: value, Line: l.line, Col: startCol}
     }
-    
+
     return Token{Type: SYMBOL, Value: value, Line: l.line, Col: startCol}
 }
 
@@ -860,18 +864,18 @@ func (l *Lexer) scanSymbol() Token {
 func (l *Lexer) scanString() Token {
     startCol := l.col
     l.advance() // consume opening quote
-    
+
     var value strings.Builder
-    
+
     for !l.isAtEnd() && l.peek() != '"' {
         ch := l.peek()
-        
+
         if ch == '\\' {
             l.advance()
             if l.isAtEnd() {
                 return l.makeToken(ILLEGAL, "unterminated string")
             }
-            
+
             // Handle escape sequences
             escaped := l.peek()
             switch escaped {
@@ -894,13 +898,13 @@ func (l *Lexer) scanString() Token {
             l.advance()
         }
     }
-    
+
     if l.isAtEnd() {
         return l.makeToken(ILLEGAL, "unterminated string")
     }
-    
+
     l.advance() // consume closing quote
-    
+
     return Token{Type: STRING, Value: value.String(), Line: l.line, Col: startCol}
 }
 
@@ -924,17 +928,17 @@ func (l *Lexer) advance() byte {
     if l.isAtEnd() {
         return 0
     }
-    
+
     ch := l.input[l.pos]
     l.pos++
-    
+
     if ch == '\n' {
         l.line++
         l.col = 1
     } else {
         l.col++
     }
-    
+
     return ch
 }
 
@@ -1019,25 +1023,25 @@ func TestLexerSimple(t *testing.T) {
         {
             "nested list",
             "(+ (* 2 3) 4)",
-            []TokenType{LPAREN, SYMBOL, LPAREN, SYMBOL, NUMBER, NUMBER, 
+            []TokenType{LPAREN, SYMBOL, LPAREN, SYMBOL, NUMBER, NUMBER,
                        RPAREN, NUMBER, RPAREN, EOF},
         },
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
             if err != nil {
                 t.Fatalf("unexpected error: %v", err)
             }
-            
+
             if len(tokens) != len(tt.expected) {
                 t.Fatalf("got %d tokens, want %d", len(tokens), len(tt.expected))
             }
-            
+
             for i, tok := range tokens {
                 if tok.Type != tt.expected[i] {
-                    t.Errorf("token %d: got %v, want %v", 
+                    t.Errorf("token %d: got %v, want %v",
                         i, tok.Type, tt.expected[i])
                 }
             }
@@ -1090,18 +1094,18 @@ func TestLexerTokenValues(t *testing.T) {
             },
         },
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
             if err != nil {
                 t.Fatalf("unexpected error: %v", err)
             }
-            
+
             if len(tokens) != len(tt.expected) {
                 t.Fatalf("got %d tokens, want %d", len(tokens), len(tt.expected))
             }
-            
+
             for i, tok := range tokens {
                 if tok.Type != tt.expected[i].Type {
                     t.Errorf("token %d type: got %v, want %v",
@@ -1124,17 +1128,17 @@ func TestLexerComments(t *testing.T) {
 42
 `
     expected := []TokenType{LPAREN, SYMBOL, NUMBER, NUMBER, RPAREN, NUMBER, EOF}
-    
+
     tokens, err := Tokenize(input)
     if err != nil {
         t.Fatalf("unexpected error: %v", err)
     }
-    
+
     var types []TokenType
     for _, tok := range tokens {
         types = append(types, tok.Type)
     }
-    
+
     if !reflect.DeepEqual(types, expected) {
         t.Errorf("got %v, want %v", types, expected)
     }
@@ -1150,18 +1154,18 @@ func TestLexerStringEscapes(t *testing.T) {
         {`"quote\"here"`, `quote"here`},
         {`"backslash\\here"`, `backslash\here`},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
             if err != nil {
                 t.Fatalf("unexpected error: %v", err)
             }
-            
+
             if len(tokens) != 2 { // STRING + EOF
                 t.Fatalf("got %d tokens, want 2", len(tokens))
             }
-            
+
             if tokens[0].Value != tt.expected {
                 t.Errorf("got %q, want %q", tokens[0].Value, tt.expected)
             }
@@ -1190,7 +1194,7 @@ package parser
 import (
     "fmt"
     "strconv"
-    
+
     "github.com/yourusername/zylisp/lang/sexpr"
 )
 
@@ -1216,9 +1220,9 @@ func (r *Reader) readExpr() (sexpr.SExpr, error) {
     if r.isAtEnd() {
         return nil, fmt.Errorf("unexpected end of input")
     }
-    
+
     tok := r.peek()
-    
+
     switch tok.Type {
     case LPAREN:
         return r.readList()
@@ -1244,9 +1248,9 @@ func (r *Reader) readExpr() (sexpr.SExpr, error) {
 // readList reads a list expression
 func (r *Reader) readList() (sexpr.SExpr, error) {
     r.advance() // consume LPAREN
-    
+
     var elements []sexpr.SExpr
-    
+
     for !r.isAtEnd() && r.peek().Type != RPAREN {
         expr, err := r.readExpr()
         if err != nil {
@@ -1254,26 +1258,26 @@ func (r *Reader) readList() (sexpr.SExpr, error) {
         }
         elements = append(elements, expr)
     }
-    
+
     if r.isAtEnd() {
         return nil, fmt.Errorf("unclosed list")
     }
-    
+
     r.advance() // consume RPAREN
-    
+
     return sexpr.List{Elements: elements}, nil
 }
 
 // readNumber reads a number expression
 func (r *Reader) readNumber() (sexpr.SExpr, error) {
     tok := r.advance()
-    
+
     value, err := strconv.ParseInt(tok.Value, 10, 64)
     if err != nil {
         return nil, fmt.Errorf("invalid number %q at line %d, col %d: %v",
             tok.Value, tok.Line, tok.Col, err)
     }
-    
+
     return sexpr.Number{Value: value}, nil
 }
 
@@ -1327,7 +1331,7 @@ package parser
 import (
     "reflect"
     "testing"
-    
+
     "github.com/yourusername/zylisp/lang/sexpr"
 )
 
@@ -1340,19 +1344,19 @@ func TestReaderNumbers(t *testing.T) {
         {"-17", sexpr.Number{Value: -17}},
         {"0", sexpr.Number{Value: 0}},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
             if err != nil {
                 t.Fatalf("tokenize error: %v", err)
             }
-            
+
             result, err := Read(tokens)
             if err != nil {
                 t.Fatalf("read error: %v", err)
             }
-            
+
             if !reflect.DeepEqual(result, tt.expected) {
                 t.Errorf("got %v, want %v", result, tt.expected)
             }
@@ -1369,19 +1373,19 @@ func TestReaderSymbols(t *testing.T) {
         {"+", sexpr.Symbol{Name: "+"}},
         {"hello-world", sexpr.Symbol{Name: "hello-world"}},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
             if err != nil {
                 t.Fatalf("tokenize error: %v", err)
             }
-            
+
             result, err := Read(tokens)
             if err != nil {
                 t.Fatalf("read error: %v", err)
             }
-            
+
             if !reflect.DeepEqual(result, tt.expected) {
                 t.Errorf("got %v, want %v", result, tt.expected)
             }
@@ -1430,19 +1434,19 @@ func TestReaderLists(t *testing.T) {
             }},
         },
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
             if err != nil {
                 t.Fatalf("tokenize error: %v", err)
             }
-            
+
             result, err := Read(tokens)
             if err != nil {
                 t.Fatalf("read error: %v", err)
             }
-            
+
             if !reflect.DeepEqual(result, tt.expected) {
                 t.Errorf("got %v, want %v", result, tt.expected)
             }
@@ -1458,19 +1462,19 @@ func TestReaderBooleans(t *testing.T) {
         {"true", sexpr.Bool{Value: true}},
         {"false", sexpr.Bool{Value: false}},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
             if err != nil {
                 t.Fatalf("tokenize error: %v", err)
             }
-            
+
             result, err := Read(tokens)
             if err != nil {
                 t.Fatalf("read error: %v", err)
             }
-            
+
             if !reflect.DeepEqual(result, tt.expected) {
                 t.Errorf("got %v, want %v", result, tt.expected)
             }
@@ -1486,19 +1490,19 @@ func TestReaderStrings(t *testing.T) {
         {`"hello"`, sexpr.String{Value: "hello"}},
         {`"hello world"`, sexpr.String{Value: "hello world"}},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
             if err != nil {
                 t.Fatalf("tokenize error: %v", err)
             }
-            
+
             result, err := Read(tokens)
             if err != nil {
                 t.Fatalf("read error: %v", err)
             }
-            
+
             if !reflect.DeepEqual(result, tt.expected) {
                 t.Errorf("got %v, want %v", result, tt.expected)
             }
@@ -1515,7 +1519,7 @@ func TestReaderErrors(t *testing.T) {
         {"extra closing paren", "(+ 1 2))"},
         {"just closing paren", ")"},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             tokens, err := Tokenize(tt.input)
@@ -1523,7 +1527,7 @@ func TestReaderErrors(t *testing.T) {
                 // Lexer error is fine for some test cases
                 return
             }
-            
+
             _, err = Read(tokens)
             if err == nil {
                 t.Errorf("expected error, got nil")
@@ -1552,7 +1556,7 @@ package interpreter
 
 import (
     "fmt"
-    
+
     "github.com/yourusername/zylisp/lang/sexpr"
 )
 
@@ -1581,11 +1585,11 @@ func (e *Env) Set(name string, value sexpr.SExpr) error {
         e.bindings[name] = value
         return nil
     }
-    
+
     if e.parent != nil {
         return e.parent.Set(name, value)
     }
-    
+
     return fmt.Errorf("undefined variable: %s", name)
 }
 
@@ -1594,11 +1598,11 @@ func (e *Env) Lookup(name string) (sexpr.SExpr, error) {
     if value, ok := e.bindings[name]; ok {
         return value, nil
     }
-    
+
     if e.parent != nil {
         return e.parent.Lookup(name)
     }
-    
+
     return nil, fmt.Errorf("undefined variable: %s", name)
 }
 
@@ -1615,27 +1619,27 @@ package interpreter
 
 import (
     "testing"
-    
+
     "github.com/yourusername/zylisp/lang/sexpr"
 )
 
 func TestEnvDefineAndLookup(t *testing.T) {
     env := NewEnv(nil)
-    
+
     // Define a variable
     env.Define("x", sexpr.Number{Value: 42})
-    
+
     // Look it up
     value, err := env.Lookup("x")
     if err != nil {
         t.Fatalf("unexpected error: %v", err)
     }
-    
+
     num, ok := value.(sexpr.Number)
     if !ok {
         t.Fatalf("expected Number, got %T", value)
     }
-    
+
     if num.Value != 42 {
         t.Errorf("got %d, want 42", num.Value)
     }
@@ -1643,7 +1647,7 @@ func TestEnvDefineAndLookup(t *testing.T) {
 
 func TestEnvUndefinedVariable(t *testing.T) {
     env := NewEnv(nil)
-    
+
     _, err := env.Lookup("undefined")
     if err == nil {
         t.Error("expected error for undefined variable")
@@ -1653,10 +1657,10 @@ func TestEnvUndefinedVariable(t *testing.T) {
 func TestEnvParentLookup(t *testing.T) {
     parent := NewEnv(nil)
     parent.Define("x", sexpr.Number{Value: 42})
-    
+
     child := NewEnv(parent)
     child.Define("y", sexpr.Number{Value: 17})
-    
+
     // Child can see its own bindings
     value, err := child.Lookup("y")
     if err != nil {
@@ -1665,7 +1669,7 @@ func TestEnvParentLookup(t *testing.T) {
     if value.(sexpr.Number).Value != 17 {
         t.Errorf("got %v, want 17", value)
     }
-    
+
     // Child can see parent bindings
     value, err = child.Lookup("x")
     if err != nil {
@@ -1674,7 +1678,7 @@ func TestEnvParentLookup(t *testing.T) {
     if value.(sexpr.Number).Value != 42 {
         t.Errorf("got %v, want 42", value)
     }
-    
+
     // Parent cannot see child bindings
     _, err = parent.Lookup("y")
     if err == nil {
@@ -1685,10 +1689,10 @@ func TestEnvParentLookup(t *testing.T) {
 func TestEnvShadowing(t *testing.T) {
     parent := NewEnv(nil)
     parent.Define("x", sexpr.Number{Value: 42})
-    
+
     child := NewEnv(parent)
     child.Define("x", sexpr.Number{Value: 17})
-    
+
     // Child sees its own binding
     value, err := child.Lookup("x")
     if err != nil {
@@ -1697,7 +1701,7 @@ func TestEnvShadowing(t *testing.T) {
     if value.(sexpr.Number).Value != 17 {
         t.Errorf("got %v, want 17", value)
     }
-    
+
     // Parent still has original binding
     value, err = parent.Lookup("x")
     if err != nil {
@@ -1711,9 +1715,9 @@ func TestEnvShadowing(t *testing.T) {
 func TestEnvExtend(t *testing.T) {
     parent := NewEnv(nil)
     parent.Define("x", sexpr.Number{Value: 42})
-    
+
     child := parent.Extend()
-    
+
     // Child can see parent binding
     value, err := child.Lookup("x")
     if err != nil {
@@ -1763,14 +1767,14 @@ package interpreter
 
 import (
     "fmt"
-    
+
     "github.com/yourusername/zylisp/lang/sexpr"
 )
 
 // Eval evaluates an S-expression in an environment
 func Eval(expr sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     switch e := expr.(type) {
-    
+
     // Self-evaluating types
     case sexpr.Number:
         return e, nil
@@ -1780,15 +1784,15 @@ func Eval(expr sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
         return e, nil
     case sexpr.Nil:
         return e, nil
-    
+
     // Symbol lookup
     case sexpr.Symbol:
         return env.Lookup(e.Name)
-    
+
     // List evaluation
     case sexpr.List:
         return evalList(e, env)
-    
+
     default:
         return nil, fmt.Errorf("cannot evaluate: %v", expr)
     }
@@ -1799,9 +1803,9 @@ func evalList(list sexpr.List, env *Env) (sexpr.SExpr, error) {
     if len(list.Elements) == 0 {
         return sexpr.Nil{}, nil
     }
-    
+
     first := list.Elements[0]
-    
+
     // Check for special forms
     if sym, ok := first.(sexpr.Symbol); ok {
         switch sym.Name {
@@ -1815,7 +1819,7 @@ func evalList(list sexpr.List, env *Env) (sexpr.SExpr, error) {
             return evalQuote(list, env)
         }
     }
-    
+
     // Function application
     return evalApply(list, env)
 }
@@ -1826,17 +1830,17 @@ func evalDefine(list sexpr.List, env *Env) (sexpr.SExpr, error) {
         return nil, fmt.Errorf("define requires 2 arguments, got %d",
             len(list.Elements)-1)
     }
-    
+
     name, ok := list.Elements[1].(sexpr.Symbol)
     if !ok {
         return nil, fmt.Errorf("define: first argument must be a symbol")
     }
-    
+
     value, err := Eval(list.Elements[2], env)
     if err != nil {
         return nil, err
     }
-    
+
     env.Define(name.Name, value)
     return value, nil
 }
@@ -1847,12 +1851,12 @@ func evalLambda(list sexpr.List, env *Env) (sexpr.SExpr, error) {
         return nil, fmt.Errorf("lambda requires 2 arguments, got %d",
             len(list.Elements)-1)
     }
-    
+
     paramsList, ok := list.Elements[1].(sexpr.List)
     if !ok {
         return nil, fmt.Errorf("lambda: parameters must be a list")
     }
-    
+
     var params []sexpr.Symbol
     for _, p := range paramsList.Elements {
         sym, ok := p.(sexpr.Symbol)
@@ -1861,9 +1865,9 @@ func evalLambda(list sexpr.List, env *Env) (sexpr.SExpr, error) {
         }
         params = append(params, sym)
     }
-    
+
     body := list.Elements[2]
-    
+
     return sexpr.Func{
         Params: params,
         Body:   body,
@@ -1877,12 +1881,12 @@ func evalIf(list sexpr.List, env *Env) (sexpr.SExpr, error) {
         return nil, fmt.Errorf("if requires 3 arguments, got %d",
             len(list.Elements)-1)
     }
-    
+
     test, err := Eval(list.Elements[1], env)
     if err != nil {
         return nil, err
     }
-    
+
     if isTruthy(test) {
         return Eval(list.Elements[2], env)
     }
@@ -1895,7 +1899,7 @@ func evalQuote(list sexpr.List, env *Env) (sexpr.SExpr, error) {
         return nil, fmt.Errorf("quote requires 1 argument, got %d",
             len(list.Elements)-1)
     }
-    
+
     return list.Elements[1], nil
 }
 
@@ -1906,7 +1910,7 @@ func evalApply(list sexpr.List, env *Env) (sexpr.SExpr, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // Evaluate arguments
     var args []sexpr.SExpr
     for _, arg := range list.Elements[1:] {
@@ -1916,15 +1920,15 @@ func evalApply(list sexpr.List, env *Env) (sexpr.SExpr, error) {
         }
         args = append(args, value)
     }
-    
+
     // Apply function
     switch f := fn.(type) {
     case sexpr.Primitive:
         return f.Fn(args, env)
-    
+
     case sexpr.Func:
         return applyFunc(f, args)
-    
+
     default:
         return nil, fmt.Errorf("not a function: %v", fn)
     }
@@ -1936,15 +1940,15 @@ func applyFunc(fn sexpr.Func, args []sexpr.SExpr) (sexpr.SExpr, error) {
         return nil, fmt.Errorf("function expects %d arguments, got %d",
             len(fn.Params), len(args))
     }
-    
+
     // Create new environment extending the function's closure
     funcEnv := fn.Env.(*Env).Extend()
-    
+
     // Bind parameters to arguments
     for i, param := range fn.Params {
         funcEnv.Define(param.Name, args[i])
     }
-    
+
     // Evaluate body in new environment
     return Eval(fn.Body, funcEnv)
 }
@@ -1969,30 +1973,30 @@ package interpreter
 
 import (
     "testing"
-    
+
     "github.com/yourusername/zylisp/lang/parser"
     "github.com/yourusername/zylisp/lang/sexpr"
 )
 
 func testEval(t *testing.T, input string, expected sexpr.SExpr) {
     t.Helper()
-    
+
     tokens, err := parser.Tokenize(input)
     if err != nil {
         t.Fatalf("tokenize error: %v", err)
     }
-    
+
     expr, err := parser.Read(tokens)
     if err != nil {
         t.Fatalf("read error: %v", err)
     }
-    
+
     env := NewEnv(nil)
     result, err := Eval(expr, env)
     if err != nil {
         t.Fatalf("eval error: %v", err)
     }
-    
+
     if result.String() != expected.String() {
         t.Errorf("got %v, want %v", result, expected)
     }
@@ -2008,7 +2012,7 @@ func TestEvalSelfEvaluating(t *testing.T) {
         {"true", sexpr.Bool{Value: true}},
         {"false", sexpr.Bool{Value: false}},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             testEval(t, tt.input, tt.expected)
@@ -2019,18 +2023,18 @@ func TestEvalSelfEvaluating(t *testing.T) {
 func TestEvalDefine(t *testing.T) {
     tokens, _ := parser.Tokenize("(define x 42)")
     expr, _ := parser.Read(tokens)
-    
+
     env := NewEnv(nil)
     result, err := Eval(expr, env)
     if err != nil {
         t.Fatalf("eval error: %v", err)
     }
-    
+
     // Should return the value
     if result.(sexpr.Number).Value != 42 {
         t.Errorf("got %v, want 42", result)
     }
-    
+
     // Should be defined in environment
     value, err := env.Lookup("x")
     if err != nil {
@@ -2044,15 +2048,15 @@ func TestEvalDefine(t *testing.T) {
 func TestEvalSymbolLookup(t *testing.T) {
     env := NewEnv(nil)
     env.Define("x", sexpr.Number{Value: 42})
-    
+
     tokens, _ := parser.Tokenize("x")
     expr, _ := parser.Read(tokens)
-    
+
     result, err := Eval(expr, env)
     if err != nil {
         t.Fatalf("eval error: %v", err)
     }
-    
+
     if result.(sexpr.Number).Value != 42 {
         t.Errorf("got %v, want 42", result)
     }
@@ -2061,13 +2065,13 @@ func TestEvalSymbolLookup(t *testing.T) {
 func TestEvalLambda(t *testing.T) {
     tokens, _ := parser.Tokenize("(lambda (x) x)")
     expr, _ := parser.Read(tokens)
-    
+
     env := NewEnv(nil)
     result, err := Eval(expr, env)
     if err != nil {
         t.Fatalf("eval error: %v", err)
     }
-    
+
     _, ok := result.(sexpr.Func)
     if !ok {
         t.Errorf("expected Func, got %T", result)
@@ -2082,18 +2086,18 @@ func TestEvalIf(t *testing.T) {
         {"(if true 1 2)", 1},
         {"(if false 1 2)", 2},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             tokens, _ := parser.Tokenize(tt.input)
             expr, _ := parser.Read(tokens)
-            
+
             env := NewEnv(nil)
             result, err := Eval(expr, env)
             if err != nil {
                 t.Fatalf("eval error: %v", err)
             }
-            
+
             if result.(sexpr.Number).Value != tt.expected {
                 t.Errorf("got %v, want %d", result, tt.expected)
             }
@@ -2104,18 +2108,18 @@ func TestEvalIf(t *testing.T) {
 func TestEvalQuote(t *testing.T) {
     tokens, _ := parser.Tokenize("(quote (+ 1 2))")
     expr, _ := parser.Read(tokens)
-    
+
     env := NewEnv(nil)
     result, err := Eval(expr, env)
     if err != nil {
         t.Fatalf("eval error: %v", err)
     }
-    
+
     list, ok := result.(sexpr.List)
     if !ok {
         t.Fatalf("expected List, got %T", result)
     }
-    
+
     if len(list.Elements) != 3 {
         t.Errorf("got %d elements, want 3", len(list.Elements))
     }
@@ -2141,7 +2145,7 @@ package interpreter
 
 import (
     "fmt"
-    
+
     "github.com/yourusername/zylisp/lang/sexpr"
 )
 
@@ -2152,20 +2156,20 @@ func LoadPrimitives(env *Env) {
     env.Define("-", makePrimitive("-", primSub))
     env.Define("*", makePrimitive("*", primMul))
     env.Define("/", makePrimitive("/", primDiv))
-    
+
     // Comparison
     env.Define("=", makePrimitive("=", primEq))
     env.Define("<", makePrimitive("<", primLt))
     env.Define(">", makePrimitive(">", primGt))
     env.Define("<=", makePrimitive("<=", primLte))
     env.Define(">=", makePrimitive(">=", primGte))
-    
+
     // List operations
     env.Define("list", makePrimitive("list", primList))
     env.Define("car", makePrimitive("car", primCar))
     env.Define("cdr", makePrimitive("cdr", primCdr))
     env.Define("cons", makePrimitive("cons", primCons))
-    
+
     // Type predicates
     env.Define("number?", makePrimitive("number?", primIsNumber))
     env.Define("symbol?", makePrimitive("symbol?", primIsSymbol))
@@ -2189,7 +2193,7 @@ func primAdd(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) == 0 {
         return sexpr.Number{Value: 0}, nil
     }
-    
+
     var sum int64
     for _, arg := range args {
         num, ok := arg.(sexpr.Number)
@@ -2198,7 +2202,7 @@ func primAdd(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
         }
         sum += num.Value
     }
-    
+
     return sexpr.Number{Value: sum}, nil
 }
 
@@ -2206,16 +2210,16 @@ func primSub(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) == 0 {
         return nil, fmt.Errorf("-: requires at least 1 argument")
     }
-    
+
     first, ok := args[0].(sexpr.Number)
     if !ok {
         return nil, fmt.Errorf("-: expected number, got %v", args[0])
     }
-    
+
     if len(args) == 1 {
         return sexpr.Number{Value: -first.Value}, nil
     }
-    
+
     result := first.Value
     for _, arg := range args[1:] {
         num, ok := arg.(sexpr.Number)
@@ -2224,7 +2228,7 @@ func primSub(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
         }
         result -= num.Value
     }
-    
+
     return sexpr.Number{Value: result}, nil
 }
 
@@ -2232,7 +2236,7 @@ func primMul(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) == 0 {
         return sexpr.Number{Value: 1}, nil
     }
-    
+
     product := int64(1)
     for _, arg := range args {
         num, ok := arg.(sexpr.Number)
@@ -2241,7 +2245,7 @@ func primMul(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
         }
         product *= num.Value
     }
-    
+
     return sexpr.Number{Value: product}, nil
 }
 
@@ -2249,19 +2253,19 @@ func primDiv(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) == 0 {
         return nil, fmt.Errorf("/: requires at least 1 argument")
     }
-    
+
     first, ok := args[0].(sexpr.Number)
     if !ok {
         return nil, fmt.Errorf("/: expected number, got %v", args[0])
     }
-    
+
     if len(args) == 1 {
         if first.Value == 0 {
             return nil, fmt.Errorf("/: division by zero")
         }
         return sexpr.Number{Value: 1 / first.Value}, nil
     }
-    
+
     result := first.Value
     for _, arg := range args[1:] {
         num, ok := arg.(sexpr.Number)
@@ -2273,7 +2277,7 @@ func primDiv(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
         }
         result /= num.Value
     }
-    
+
     return sexpr.Number{Value: result}, nil
 }
 
@@ -2283,14 +2287,14 @@ func primEq(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 2 {
         return nil, fmt.Errorf("=: requires 2 arguments, got %d", len(args))
     }
-    
+
     a, ok1 := args[0].(sexpr.Number)
     b, ok2 := args[1].(sexpr.Number)
-    
+
     if !ok1 || !ok2 {
         return nil, fmt.Errorf("=: expected numbers")
     }
-    
+
     return sexpr.Bool{Value: a.Value == b.Value}, nil
 }
 
@@ -2298,14 +2302,14 @@ func primLt(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 2 {
         return nil, fmt.Errorf("<: requires 2 arguments, got %d", len(args))
     }
-    
+
     a, ok1 := args[0].(sexpr.Number)
     b, ok2 := args[1].(sexpr.Number)
-    
+
     if !ok1 || !ok2 {
         return nil, fmt.Errorf("<: expected numbers")
     }
-    
+
     return sexpr.Bool{Value: a.Value < b.Value}, nil
 }
 
@@ -2313,14 +2317,14 @@ func primGt(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 2 {
         return nil, fmt.Errorf(">: requires 2 arguments, got %d", len(args))
     }
-    
+
     a, ok1 := args[0].(sexpr.Number)
     b, ok2 := args[1].(sexpr.Number)
-    
+
     if !ok1 || !ok2 {
         return nil, fmt.Errorf(">: expected numbers")
     }
-    
+
     return sexpr.Bool{Value: a.Value > b.Value}, nil
 }
 
@@ -2328,14 +2332,14 @@ func primLte(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 2 {
         return nil, fmt.Errorf("<=: requires 2 arguments, got %d", len(args))
     }
-    
+
     a, ok1 := args[0].(sexpr.Number)
     b, ok2 := args[1].(sexpr.Number)
-    
+
     if !ok1 || !ok2 {
         return nil, fmt.Errorf("<=: expected numbers")
     }
-    
+
     return sexpr.Bool{Value: a.Value <= b.Value}, nil
 }
 
@@ -2343,14 +2347,14 @@ func primGte(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 2 {
         return nil, fmt.Errorf(">=: requires 2 arguments, got %d", len(args))
     }
-    
+
     a, ok1 := args[0].(sexpr.Number)
     b, ok2 := args[1].(sexpr.Number)
-    
+
     if !ok1 || !ok2 {
         return nil, fmt.Errorf(">=: expected numbers")
     }
-    
+
     return sexpr.Bool{Value: a.Value >= b.Value}, nil
 }
 
@@ -2364,16 +2368,16 @@ func primCar(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 1 {
         return nil, fmt.Errorf("car: requires 1 argument, got %d", len(args))
     }
-    
+
     list, ok := args[0].(sexpr.List)
     if !ok {
         return nil, fmt.Errorf("car: expected list, got %v", args[0])
     }
-    
+
     if len(list.Elements) == 0 {
         return nil, fmt.Errorf("car: cannot take car of empty list")
     }
-    
+
     return list.Elements[0], nil
 }
 
@@ -2381,16 +2385,16 @@ func primCdr(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 1 {
         return nil, fmt.Errorf("cdr: requires 1 argument, got %d", len(args))
     }
-    
+
     list, ok := args[0].(sexpr.List)
     if !ok {
         return nil, fmt.Errorf("cdr: expected list, got %v", args[0])
     }
-    
+
     if len(list.Elements) == 0 {
         return nil, fmt.Errorf("cdr: cannot take cdr of empty list")
     }
-    
+
     return sexpr.List{Elements: list.Elements[1:]}, nil
 }
 
@@ -2398,16 +2402,16 @@ func primCons(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 2 {
         return nil, fmt.Errorf("cons: requires 2 arguments, got %d", len(args))
     }
-    
+
     list, ok := args[1].(sexpr.List)
     if !ok {
         return nil, fmt.Errorf("cons: second argument must be a list, got %v", args[1])
     }
-    
+
     elements := make([]sexpr.SExpr, 0, len(list.Elements)+1)
     elements = append(elements, args[0])
     elements = append(elements, list.Elements...)
-    
+
     return sexpr.List{Elements: elements}, nil
 }
 
@@ -2417,7 +2421,7 @@ func primIsNumber(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 1 {
         return nil, fmt.Errorf("number?: requires 1 argument, got %d", len(args))
     }
-    
+
     _, ok := args[0].(sexpr.Number)
     return sexpr.Bool{Value: ok}, nil
 }
@@ -2426,7 +2430,7 @@ func primIsSymbol(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 1 {
         return nil, fmt.Errorf("symbol?: requires 1 argument, got %d", len(args))
     }
-    
+
     _, ok := args[0].(sexpr.Symbol)
     return sexpr.Bool{Value: ok}, nil
 }
@@ -2435,7 +2439,7 @@ func primIsList(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 1 {
         return nil, fmt.Errorf("list?: requires 1 argument, got %d", len(args))
     }
-    
+
     _, ok := args[0].(sexpr.List)
     return sexpr.Bool{Value: ok}, nil
 }
@@ -2444,12 +2448,12 @@ func primIsNull(args []sexpr.SExpr, env *Env) (sexpr.SExpr, error) {
     if len(args) != 1 {
         return nil, fmt.Errorf("null?: requires 1 argument, got %d", len(args))
     }
-    
+
     list, ok := args[0].(sexpr.List)
     if !ok {
         return sexpr.Bool{Value: false}, nil
     }
-    
+
     return sexpr.Bool{Value: len(list.Elements) == 0}, nil
 }
 ```
@@ -2461,32 +2465,32 @@ package interpreter
 
 import (
     "testing"
-    
+
     "github.com/yourusername/zylisp/lang/parser"
     "github.com/yourusername/zylisp/lang/sexpr"
 )
 
 func testEvalWithPrimitives(t *testing.T, input string, expected sexpr.SExpr) {
     t.Helper()
-    
+
     tokens, err := parser.Tokenize(input)
     if err != nil {
         t.Fatalf("tokenize error: %v", err)
     }
-    
+
     expr, err := parser.Read(tokens)
     if err != nil {
         t.Fatalf("read error: %v", err)
     }
-    
+
     env := NewEnv(nil)
     LoadPrimitives(env)
-    
+
     result, err := Eval(expr, env)
     if err != nil {
         t.Fatalf("eval error: %v", err)
     }
-    
+
     if result.String() != expected.String() {
         t.Errorf("got %v, want %v", result, expected)
     }
@@ -2502,7 +2506,7 @@ func TestPrimAdd(t *testing.T) {
         {"(+)", 0},
         {"(+ 42)", 42},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             testEvalWithPrimitives(t, tt.input, sexpr.Number{Value: tt.expected})
@@ -2519,7 +2523,7 @@ func TestPrimSub(t *testing.T) {
         {"(- 10 3 2)", 5},
         {"(- 42)", -42},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             testEvalWithPrimitives(t, tt.input, sexpr.Number{Value: tt.expected})
@@ -2537,7 +2541,7 @@ func TestPrimMul(t *testing.T) {
         {"(*)", 1},
         {"(* 42)", 42},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             testEvalWithPrimitives(t, tt.input, sexpr.Number{Value: tt.expected})
@@ -2553,7 +2557,7 @@ func TestPrimDiv(t *testing.T) {
         {"(/ 6 2)", 3},
         {"(/ 24 3 2)", 4},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             testEvalWithPrimitives(t, tt.input, sexpr.Number{Value: tt.expected})
@@ -2579,7 +2583,7 @@ func TestPrimComparisons(t *testing.T) {
         {"(>= 2 1)", true},
         {"(>= 1 2)", false},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             testEvalWithPrimitives(t, tt.input, sexpr.Bool{Value: tt.expected})
@@ -2596,14 +2600,14 @@ func TestPrimList(t *testing.T) {
             sexpr.Number{Value: 3},
         },
     }
-    
+
     testEvalWithPrimitives(t, input, expected)
 }
 
 func TestPrimCar(t *testing.T) {
     input := "(car (list 1 2 3))"
     expected := sexpr.Number{Value: 1}
-    
+
     testEvalWithPrimitives(t, input, expected)
 }
 
@@ -2615,7 +2619,7 @@ func TestPrimCdr(t *testing.T) {
             sexpr.Number{Value: 3},
         },
     }
-    
+
     testEvalWithPrimitives(t, input, expected)
 }
 
@@ -2629,7 +2633,7 @@ func TestPrimCons(t *testing.T) {
             sexpr.Number{Value: 3},
         },
     }
-    
+
     testEvalWithPrimitives(t, input, expected)
 }
 
@@ -2647,7 +2651,7 @@ func TestPrimTypePredicates(t *testing.T) {
         {"(null? (list))", true},
         {"(null? (list 1))", false},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             testEvalWithPrimitives(t, tt.input, sexpr.Bool{Value: tt.expected})
@@ -2664,7 +2668,7 @@ func TestNestedExpressions(t *testing.T) {
         {"(* (+ 1 2) (- 5 2))", 9},
         {"(/ (+ 10 6) (- 6 2))", 4},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             testEvalWithPrimitives(t, tt.input, sexpr.Number{Value: tt.expected})
@@ -2677,19 +2681,19 @@ func TestUserDefinedFunctions(t *testing.T) {
         (define square (lambda (x) (* x x)))
         (square 5)
     `
-    
+
     tokens, _ := parser.Tokenize(input)
-    
+
     env := NewEnv(nil)
     LoadPrimitives(env)
-    
+
     // Read and eval first expression (define)
     expr1, _ := parser.Read(tokens)
     _, err := Eval(expr1, env)
     if err != nil {
         t.Fatalf("eval define error: %v", err)
     }
-    
+
     // Read and eval second expression (square 5)
     reader := parser.NewReader(tokens)
     reader.Tokenize() // Skip already-read tokens
@@ -2698,7 +2702,7 @@ func TestUserDefinedFunctions(t *testing.T) {
     if err != nil {
         t.Fatalf("eval call error: %v", err)
     }
-    
+
     expected := sexpr.Number{Value: 25}
     if result.String() != expected.String() {
         t.Errorf("got %v, want %v", result, expected)
@@ -2772,7 +2776,7 @@ package server
 
 import (
     "fmt"
-    
+
     "github.com/yourusername/zylisp/lang/interpreter"
     "github.com/yourusername/zylisp/lang/parser"
 )
@@ -2786,7 +2790,7 @@ type Server struct {
 func NewServer() *Server {
     env := interpreter.NewEnv(nil)
     interpreter.LoadPrimitives(env)
-    
+
     return &Server{env: env}
 }
 
@@ -2797,19 +2801,19 @@ func (s *Server) Eval(source string) (string, error) {
     if err != nil {
         return "", fmt.Errorf("tokenize error: %w", err)
     }
-    
+
     // Parse
     expr, err := parser.Read(tokens)
     if err != nil {
         return "", fmt.Errorf("parse error: %w", err)
     }
-    
+
     // Evaluate
     result, err := interpreter.Eval(expr, s.env)
     if err != nil {
         return "", fmt.Errorf("eval error: %w", err)
     }
-    
+
     return result.String(), nil
 }
 
@@ -2831,7 +2835,7 @@ import (
 
 func TestServerBasicEval(t *testing.T) {
     server := NewServer()
-    
+
     tests := []struct {
         input    string
         expected string
@@ -2842,14 +2846,14 @@ func TestServerBasicEval(t *testing.T) {
         {`"hello"`, `"hello"`},
         {"true", "true"},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.input, func(t *testing.T) {
             result, err := server.Eval(tt.input)
             if err != nil {
                 t.Fatalf("unexpected error: %v", err)
             }
-            
+
             if result != tt.expected {
                 t.Errorf("got %q, want %q", result, tt.expected)
             }
@@ -2859,19 +2863,19 @@ func TestServerBasicEval(t *testing.T) {
 
 func TestServerDefine(t *testing.T) {
     server := NewServer()
-    
+
     // Define a variable
     _, err := server.Eval("(define x 42)")
     if err != nil {
         t.Fatalf("define error: %v", err)
     }
-    
+
     // Use the variable
     result, err := server.Eval("x")
     if err != nil {
         t.Fatalf("lookup error: %v", err)
     }
-    
+
     if result != "42" {
         t.Errorf("got %q, want \"42\"", result)
     }
@@ -2879,19 +2883,19 @@ func TestServerDefine(t *testing.T) {
 
 func TestServerLambda(t *testing.T) {
     server := NewServer()
-    
+
     // Define a function
     _, err := server.Eval("(define square (lambda (x) (* x x)))")
     if err != nil {
         t.Fatalf("define error: %v", err)
     }
-    
+
     // Call the function
     result, err := server.Eval("(square 5)")
     if err != nil {
         t.Fatalf("call error: %v", err)
     }
-    
+
     if result != "25" {
         t.Errorf("got %q, want \"25\"", result)
     }
@@ -2899,13 +2903,13 @@ func TestServerLambda(t *testing.T) {
 
 func TestServerReset(t *testing.T) {
     server := NewServer()
-    
+
     // Define a variable
     server.Eval("(define x 42)")
-    
+
     // Reset the server
     server.Reset()
-    
+
     // Variable should be undefined now
     _, err := server.Eval("x")
     if err == nil {
@@ -2915,14 +2919,14 @@ func TestServerReset(t *testing.T) {
 
 func TestServerErrors(t *testing.T) {
     server := NewServer()
-    
+
     tests := []string{
         "(+",           // unclosed paren
         "(+ 1 x)",      // undefined variable
         "(1 2 3)",      // not a function
         "(/ 1 0)",      // division by zero
     }
-    
+
     for _, input := range tests {
         t.Run(input, func(t *testing.T) {
             _, err := server.Eval(input)
@@ -2983,19 +2987,19 @@ package client
 
 import (
     "testing"
-    
+
     "github.com/yourusername/zylisp/repl/server"
 )
 
 func TestClientSend(t *testing.T) {
     srv := server.NewServer()
     client := NewClient(srv)
-    
+
     result, err := client.Send("(+ 1 2)")
     if err != nil {
         t.Fatalf("unexpected error: %v", err)
     }
-    
+
     if result != "3" {
         t.Errorf("got %q, want \"3\"", result)
     }
@@ -3004,13 +3008,13 @@ func TestClientSend(t *testing.T) {
 func TestClientReset(t *testing.T) {
     srv := server.NewServer()
     client := NewClient(srv)
-    
+
     // Define a variable
     client.Send("(define x 42)")
-    
+
     // Reset
     client.Reset()
-    
+
     // Variable should be undefined
     _, err := client.Send("x")
     if err == nil {
@@ -3069,6 +3073,7 @@ zylisp
 ## Status
 
 MVP implementation - basic REPL only.
+
 ```
 
 **File: `main.go`**
@@ -3081,7 +3086,7 @@ import (
     "fmt"
     "os"
     "strings"
-    
+
     "github.com/yourusername/zylisp/repl/client"
     "github.com/yourusername/zylisp/repl/server"
 )
@@ -3104,35 +3109,35 @@ Type ':help' for more commands.
 
 func main() {
     fmt.Print(banner)
-    
+
     // Create server and client
     srv := server.NewServer()
     cli := client.NewClient(srv)
-    
+
     // Create scanner for input
     scanner := bufio.NewScanner(os.Stdin)
-    
+
     // REPL loop
     for {
         fmt.Print("> ")
-        
+
         // Read input
         if !scanner.Scan() {
             break
         }
-        
+
         line := strings.TrimSpace(scanner.Text())
-        
+
         // Skip empty lines
         if line == "" {
             continue
         }
-        
+
         // Handle special commands
         if handleCommand(line, cli) {
             continue
         }
-        
+
         // Evaluate expression
         result, err := cli.Send(line)
         if err != nil {
@@ -3141,13 +3146,13 @@ func main() {
             fmt.Println(result)
         }
     }
-    
+
     // Check for scanner errors
     if err := scanner.Err(); err != nil {
         fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
         os.Exit(1)
     }
-    
+
     fmt.Println("\nGoodbye!")
 }
 
@@ -3159,16 +3164,16 @@ func handleCommand(line string, cli *client.Client) bool {
         fmt.Println("\nGoodbye!")
         os.Exit(0)
         return true
-    
+
     case ":reset":
         cli.Reset()
         fmt.Println("Environment reset")
         return true
-    
+
     case ":help":
         showHelp()
         return true
-    
+
     default:
         return false
     }
@@ -3196,13 +3201,13 @@ Primitives:
 Examples:
   > (+ 1 2)
   3
-  
+
   > (define square (lambda (x) (* x x)))
   <function>
-  
+
   > (square 5)
   25
-  
+
   > (if (> 5 3) "yes" "no")
   "yes"
 `)
@@ -3264,7 +3269,7 @@ package main
 
 import (
     "testing"
-    
+
     "github.com/yourusername/zylisp/repl/client"
     "github.com/yourusername/zylisp/repl/server"
 )
@@ -3272,7 +3277,7 @@ import (
 func TestIntegrationBasic(t *testing.T) {
     srv := server.NewServer()
     cli := client.NewClient(srv)
-    
+
     tests := []struct {
         name     string
         input    string
@@ -3284,14 +3289,14 @@ func TestIntegrationBasic(t *testing.T) {
         {"string", `"hello"`, `"hello"`},
         {"boolean", "true", "true"},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             result, err := cli.Send(tt.input)
             if err != nil {
                 t.Fatalf("unexpected error: %v", err)
             }
-            
+
             if result != tt.expected {
                 t.Errorf("got %q, want %q", result, tt.expected)
             }
@@ -3302,7 +3307,7 @@ func TestIntegrationBasic(t *testing.T) {
 func TestIntegrationStateful(t *testing.T) {
     srv := server.NewServer()
     cli := client.NewClient(srv)
-    
+
     steps := []struct {
         input    string
         expected string
@@ -3315,13 +3320,13 @@ func TestIntegrationStateful(t *testing.T) {
         {"(add x y)", "30"},
         {"(add 5 7)", "12"},
     }
-    
+
     for i, step := range steps {
         result, err := cli.Send(step.input)
         if err != nil {
             t.Fatalf("step %d error: %v", i, err)
         }
-        
+
         if result != step.expected {
             t.Errorf("step %d: got %q, want %q", i, result, step.expected)
         }
@@ -3331,7 +3336,7 @@ func TestIntegrationStateful(t *testing.T) {
 func TestIntegrationFactorial(t *testing.T) {
     srv := server.NewServer()
     cli := client.NewClient(srv)
-    
+
     // Define factorial function
     factorialDef := `
         (define factorial
@@ -3340,12 +3345,12 @@ func TestIntegrationFactorial(t *testing.T) {
                 1
                 (* n (factorial (- n 1))))))
     `
-    
+
     _, err := cli.Send(factorialDef)
     if err != nil {
         t.Fatalf("define factorial error: %v", err)
     }
-    
+
     tests := []struct {
         n        int
         expected string
@@ -3355,14 +3360,14 @@ func TestIntegrationFactorial(t *testing.T) {
         {5, "120"},
         {6, "720"},
     }
-    
+
     for _, tt := range tests {
         input := fmt.Sprintf("(factorial %d)", tt.n)
         result, err := cli.Send(input)
         if err != nil {
             t.Fatalf("factorial(%d) error: %v", tt.n, err)
         }
-        
+
         if result != tt.expected {
             t.Errorf("factorial(%d): got %q, want %q", tt.n, result, tt.expected)
         }
@@ -3372,7 +3377,7 @@ func TestIntegrationFactorial(t *testing.T) {
 func TestIntegrationListProcessing(t *testing.T) {
     srv := server.NewServer()
     cli := client.NewClient(srv)
-    
+
     // Define sum function
     sumDef := `
         (define sum
@@ -3381,17 +3386,17 @@ func TestIntegrationListProcessing(t *testing.T) {
                 0
                 (+ (car lst) (sum (cdr lst))))))
     `
-    
+
     _, err := cli.Send(sumDef)
     if err != nil {
         t.Fatalf("define sum error: %v", err)
     }
-    
+
     result, err := cli.Send("(sum (list 1 2 3 4 5))")
     if err != nil {
         t.Fatalf("sum error: %v", err)
     }
-    
+
     if result != "15" {
         t.Errorf("sum: got %q, want \"15\"", result)
     }
@@ -3420,3 +3425,4 @@ go test -v
 6
 
 > (- 10 3)
+```

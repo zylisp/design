@@ -34,13 +34,9 @@
 | 0028 | Zylisp Design Repository Setup Instructions | Final | 2025-10-04 |
 | 0029 | "Instructions for Building zdp.go (Zylisp Design Proposal Tool)" | Final | 2025-10-04 |
 | 0030 | "zylisp/rely: Erlang-Style Supervision for Go" | Under Review | 2025-10-05 |
-| 0031 | "Zylisp MVP Development Plan" | Active | 2025-10-05 |
+| 0031 | "Zylisp MVP Development Plan" | Final | 2025-10-06 |
 
 ## Documents by State
-
-### Active
-
-- [0031 - "Zylisp MVP Development Plan"](05-active/0031-zylisp-mvp-plan.md)
 
 ### Under Review
 
@@ -71,6 +67,7 @@
 - [0023 - Removing Position Tracking from zast](06-final/0023-zast-position-removal.md)
 - [0028 - Zylisp Design Repository Setup Instructions](06-final/0028-zylisp-design-setup.md)
 - [0029 - Instructions for Building zdp.go (Zylisp Design Proposal Tool)](06-final/0029-zdp-tool-instructions.md)
+- [0031 - "Zylisp MVP Development Plan"](06-final/0031-zylisp-mvp-plan.md)
 
 ### Draft
 
