@@ -34,9 +34,13 @@
 | 0028 | Zylisp Design Repository Setup Instructions | Final | 2025-10-04 |
 | 0029 | "Instructions for Building zdp.go (Zylisp Design Proposal Tool)" | Final | 2025-10-04 |
 | 0030 | "zylisp/rely: Erlang-Style Supervision for Go" | Under Review | 2025-10-05 |
-| 0031 | "Zylisp MVP Development Plan" | Draft | 2025-10-05 |
+| 0031 | "Zylisp MVP Development Plan" | Active | 2025-10-05 |
 
 ## Documents by State
+
+### Active
+
+- [0031 - "Zylisp MVP Development Plan"](05-active/0031-zylisp-mvp-plan.md)
 
 ### Under Review
 
@@ -76,4 +80,3 @@
 - [0025 - Zylisp Pattern Matching: Compilation to Go AST](01-draft/0025-zylisp-pattern-matching-compilation.md)
 - [0026 - Zylisp Runtime Library Design](01-draft/0026-zylisp-runtime-design.md)
 - [0027 - Zylisp Forms & Expansion Pipeline - Design Document](01-draft/0027-zylisp-forms-design.md)
-- [0031 - "Zylisp MVP Development Plan"](01-draft/0031-zylisp-mvp-plan.md)

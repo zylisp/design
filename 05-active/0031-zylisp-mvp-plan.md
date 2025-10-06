@@ -4,7 +4,7 @@ title: "Zylisp MVP Development Plan"
 author: Unknown
 created: 2025-10-05
 updated: 2025-10-05
-state: Draft
+state: Active
 supersedes: None
 superseded-by: None
 ---
