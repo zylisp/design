@@ -4,6 +4,7 @@
 
 | Number | Title | State | Updated |
 |--------|-------|-------|---------|
+| 0000 | "Zylisp Remote REPL Protocol - Design Document" | Draft | 2025-10-06 |
 | 0001 | Go-Lisp: A Letter of Intent | Final | 2025-10-04 |
 | 0002 | Zylisp Architecture & Project Structure | Final | 2025-10-04 |
 | 0003 | Canonical S-Expression Format for Go AST | Final | 2025-10-04 |
@@ -35,8 +36,14 @@
 | 0029 | "Instructions for Building zdp.go (Zylisp Design Proposal Tool)" | Final | 2025-10-04 |
 | 0030 | "zylisp/rely: Erlang-Style Supervision for Go" | Under Review | 2025-10-05 |
 | 0031 | "Zylisp MVP Development Plan" | Final | 2025-10-06 |
+| 0032 | "Zylisp Remote REPL Protocol - Design Document" | Final | 2025-10-06 |
+| 0033 | "Zylisp CLI Migration to New REPL Protocol" | Final | 2025-10-06 |
 
 ## Documents by State
+
+### Active
+
+- [0033 - "Zylisp CLI Migration to New REPL Protocol"](05-active/0032-repl-cli-migration.md)
 
 ### Under Review
 
@@ -68,9 +75,12 @@
 - [0028 - Zylisp Design Repository Setup Instructions](06-final/0028-zylisp-design-setup.md)
 - [0029 - Instructions for Building zdp.go (Zylisp Design Proposal Tool)](06-final/0029-zdp-tool-instructions.md)
 - [0031 - "Zylisp MVP Development Plan"](06-final/0031-zylisp-mvp-plan.md)
+- [0032 - "Zylisp Remote REPL Protocol - Design Document"](06-final/0032-repl-protocol-design.md)
+- [0033 - "Zylisp CLI Migration to New REPL Protocol"](06-final/0033-repl-cli-migration.md)
 
 ### Draft
 
+- [0000 - "Zylisp Remote REPL Protocol - Design Document"](01-draft/repl-protocol-design.md)
 - [0020 - Immutable Data in Go: Challenges and Research Areas](01-draft/0020-go-immutability-research.md)
 - [0021 - Tail Call Optimization Approaches for Zylisp](01-draft/0021-zylisp-tco-options.md)
 - [0022 - Source Map Architecture for Zylisp](01-draft/0022-source-map-spec.md)
