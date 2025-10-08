@@ -38,6 +38,7 @@
 | 0031 | "Zylisp MVP Development Plan" | Final | 2025-10-06 |
 | 0032 | "Zylisp Remote REPL Protocol - Design Document" | Final | 2025-10-06 |
 | 0033 | "Zylisp CLI Migration to New REPL Protocol" | Final | 2025-10-06 |
+| 0034 | "Zylisp Reader Macros and Plugin System Design" | Draft | 2025-10-08 |
 
 ## Documents by State
 
@@ -80,10 +81,10 @@
 
 ### Draft
 
-- [0000 - "Zylisp Remote REPL Protocol - Design Document"](01-draft/repl-protocol-design.md)
 - [0020 - Immutable Data in Go: Challenges and Research Areas](01-draft/0020-go-immutability-research.md)
 - [0021 - Tail Call Optimization Approaches for Zylisp](01-draft/0021-zylisp-tco-options.md)
 - [0022 - Source Map Architecture for Zylisp](01-draft/0022-source-map-spec.md)
 - [0025 - Zylisp Pattern Matching: Compilation to Go AST](01-draft/0025-zylisp-pattern-matching-compilation.md)
 - [0026 - Zylisp Runtime Library Design](01-draft/0026-zylisp-runtime-design.md)
 - [0027 - Zylisp Forms & Expansion Pipeline - Design Document](01-draft/0027-zylisp-forms-design.md)
+- [0034 - "Zylisp Reader Macros and Plugin System Design"](01-draft/0034-zylisp-reader-plugin-design.md)
