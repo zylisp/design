@@ -2,7 +2,7 @@
 
 Design proposals and specifications for the Zylisp programming language.
 
-This repository contains all design documents, proposals, and specifications for Zylisp. Each document follows a structured lifecycle from initial draft through review, acceptance, implementation, and finalization. This process ensures that language design decisions are well-documented, reviewed by the community, and tracked throughout their lifecycle.
+This repository contains all [design documents, proposals, and specifications for Zylisp](00-index.md). Each document follows a structured lifecycle from initial draft through review, acceptance, implementation, and finalization. This process ensures that language design decisions are well-documented, reviewed by the community, and tracked throughout their lifecycle.
 
 ## Design Document States
 
