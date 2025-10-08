@@ -4,7 +4,7 @@ title: "Zylisp Language Bootstrap Implementation Plan - Cheat Sheet"
 author: Unknown
 created: 2025-10-08
 updated: 2025-10-08
-state: Draft
+state: Active
 supersedes: None
 superseded-by: None
 ---

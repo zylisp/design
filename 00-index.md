@@ -39,14 +39,16 @@
 | 0032 | "Zylisp Remote REPL Protocol - Design Document" | Final | 2025-10-06 |
 | 0033 | "Zylisp CLI Migration to New REPL Protocol" | Final | 2025-10-06 |
 | 0034 | "Zylisp Reader Macros and Plugin System Design" | Draft | 2025-10-08 |
-| 0035 | "Zylisp Language Bootstrap Implementation Plan" | Draft | 2025-10-08 |
-| 0036 | "Zylisp Language Bootstrap Implementation Plan - Cheat Sheet" | Draft | 2025-10-08 |
+| 0035 | "Zylisp Language Bootstrap Implementation Plan" | Active | 2025-10-08 |
+| 0036 | "Zylisp Language Bootstrap Implementation Plan - Cheat Sheet" | Active | 2025-10-08 |
 
 ## Documents by State
 
 ### Active
 
 - [0033 - "Zylisp CLI Migration to New REPL Protocol"](05-active/0032-repl-cli-migration.md)
+- [0035 - "Zylisp Language Bootstrap Implementation Plan"](05-active/0035-language-bootstrap-impl.md)
+- [0036 - "Zylisp Language Bootstrap Implementation Plan - Cheat Sheet"](05-active/0036-language-bootstrap-impl-cheatsheet.md)
 
 ### Under Review
 
@@ -90,5 +92,3 @@
 - [0026 - Zylisp Runtime Library Design](01-draft/0026-zylisp-runtime-design.md)
 - [0027 - Zylisp Forms & Expansion Pipeline - Design Document](01-draft/0027-zylisp-forms-design.md)
 - [0034 - "Zylisp Reader Macros and Plugin System Design"](01-draft/0034-zylisp-reader-plugin-design.md)
-- [0035 - "Zylisp Language Bootstrap Implementation Plan"](01-draft/0035-language-bootstrap-impl.md)
-- [0036 - "Zylisp Language Bootstrap Implementation Plan - Cheat Sheet"](01-draft/0036-language-bootstrap-impl-cheatsheet.md)
