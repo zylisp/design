@@ -48,7 +48,6 @@
 
 ### Active
 
-- [0033 - "Zylisp CLI Migration to New REPL Protocol"](05-active/0032-repl-cli-migration.md)
 - [0035 - "Zylisp Language Bootstrap Implementation Plan"](05-active/0035-language-bootstrap-impl.md)
 - [0036 - "Zylisp Language Bootstrap Implementation Plan - Cheat Sheet"](05-active/0036-language-bootstrap-impl-cheatsheet.md)
 
@@ -57,7 +56,7 @@
 - [0013 - "Zylisp REPL Architecture & Design Decisions"](02-under-review/0013-zylisp-repl-arch.md)
 - [0014 - "REPL Architecture Addendum: Memory Management & Process Supervision"](02-under-review/0014-repl-addendum-memory-mgmt.md)
 - [0019 - "Zylisp Architecture: Complete System Design"](02-under-review/0019-zylisp-arch-v1.1.0.md)
-- [0024 - "Zylisp Error Handling Design Document"](02-under-review/0024-zylisp-error-handling.md)=
+- [0024 - "Zylisp Error Handling Design Document"](02-under-review/0024-zylisp-error-handling.md)
 - [0030 - "zylisp/rely: Erlang-Style Supervision for Go""](02-under-review/0030-rely-design-spec.md)
 
 ### Final
@@ -92,7 +91,7 @@
 - [0022 - "Source Map Architecture for Zylisp"](01-draft/0022-source-map-spec.md)
 - [0025 - "Zylisp Pattern Matching: Compilation to Go AST"](01-draft/0025-zylisp-pattern-matching-compilation.md)
 - [0026 - "Zylisp Runtime Library Design"](01-draft/0026-zylisp-runtime-design.md)
-- [0027 - "Zylisp Forms & Expansion Pipeline - Design Document"](01-draft/0027-zylisp-forms-design.md)
+- [0027 - "Zylisp Forms & Expansion Pipeline"](01-draft/0027-zylisp-forms-design.md)
 - [0034 - "Zylisp Reader Macros and Plugin System Design"](01-draft/0034-zylisp-reader-plugin-design.md)
 - [0037 - "Macro Hygiene and Gensym in Zylisp"](01-draft/0037-macro-hygiene.md)
 - [0038 - "Zylisp: Project/Module Structure and Build System Design"](01-draft/0038-project-module-design.md)

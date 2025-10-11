@@ -1,6 +1,6 @@
 ---
 number: 0027
-title: "Zylisp Forms & Expansion Pipeline - Design Document"
+title: "Zylisp Forms & Expansion Pipeline"
 author: Duncan McGreggor
 created: 2025-10-04
 updated: 2025-10-04
@@ -9,7 +9,7 @@ supersedes: None
 superseded-by: None
 ---
 
-# Zylisp Forms & Expansion Pipeline - Design Document
+# Zylisp Forms & Expansion Pipeline
 
 **Status:** Planning Stage
 **Date:** October 2025

@@ -11,8 +11,8 @@ superseded-by: None
 
 # Zylisp Reader Macros and Plugin System Design
 
-**Status:** Exploration / Pre-Design  
-**Date:** October 2025  
+**Status:** Exploration / Pre-Design
+**Date:** October 2025
 **Purpose:** Guide future development of Zylisp's extensibility mechanisms
 
 ---
@@ -133,7 +133,7 @@ Add cases to the lexer for `#` followed by specific characters:
 ```go
 func (l *Lexer) scanSharpDispatch() Token {
     ch := l.peek()
-    
+
     switch ch {
     case '[':
         return l.scanVectorLiteral()
@@ -156,12 +156,14 @@ func (l *Lexer) scanSharpDispatch() Token {
 #### Evaluation
 
 **Advantages:**
+
 - ✅ Clean implementation
 - ✅ No security concerns
 - ✅ Predictable behavior
 - ✅ Easy to optimize
 
 **Disadvantages:**
+
 - ❌ Not extensible by users
 - ❌ Language designers must anticipate all needs
 - ❌ Can't experiment with syntax in user code
@@ -187,6 +189,7 @@ func (l *Lexer) scanSharpDispatch() Token {
 ```
 
 Multiple delimiter options:
+
 ```zylisp
 #tag<content>   ; Angle brackets for simple content
 #tag{content}   ; Braces to avoid escaping
@@ -209,16 +212,16 @@ type Token struct {
 func (l *Lexer) scanTaggedLiteral() Token {
     tag := l.scanIdentifier()
     delim := l.peek()
-    
+
     if !l.isDelimiter(delim) {
         l.error("Tagged literal must be followed by <, {, [, or (")
     }
-    
+
     closingDelim := l.matchingDelimiter(delim)
     l.advance()
-    
+
     content := l.scanUntilBalanced(closingDelim)
-    
+
     return Token{
         Type:    TOKEN_TAGGED_LITERAL,
         Tag:     tag,
@@ -234,7 +237,7 @@ func (l *Lexer) scanTaggedLiteral() Token {
 func (p *Parser) parseTaggedLiteral(tok Token) sexpr.SExpr {
     // #timestamp<2025-10-08> becomes
     // (tagged-literal "timestamp" "2025-10-08")
-    
+
     return sexpr.List{
         sexpr.Symbol("tagged-literal"),
         sexpr.String(tok.Tag),
@@ -255,11 +258,11 @@ type Expander struct {
 func (e *Expander) expandTaggedLiteral(list sexpr.List) (sexpr.SExpr, error) {
     tag := string(list[1].(sexpr.String))
     content := string(list[2].(sexpr.String))
-    
+
     if expander, exists := e.tagExpanders[tag]; exists {
         return expander(content)
     }
-    
+
     // No expander registered - return as-is for later handling
     return list, nil
 }
@@ -297,7 +300,7 @@ Expands to:
   ;; Parse at macro expansion time
   (let ((parsed (time:parse-iso8601 content)))
     ;; Return code that recreates this timestamp
-    `(time:make-timestamp 
+    `(time:make-timestamp
        ,(time:year parsed)
        ,(time:month parsed)
        ,(time:day parsed)
@@ -319,7 +322,7 @@ Now `#timestamp<2025-10-08T15:30:00Z>` expands to:
 ```zylisp
 ;; Macro for defining tag expanders
 (defmacro define-tag-expander [tag [content-var] & body]
-  `(register-tag-expander 
+  `(register-tag-expander
      ',tag
      (fn [,content-var] ,@body)))
 
@@ -330,7 +333,7 @@ Now `#timestamp<2025-10-08T15:30:00Z>` expands to:
 (define-tag-expander sql [query-string]
   ;; Parse SQL at expansion time, generate prepared statement
   (let ((parsed (sql:parse-query query-string)))
-    `(sql:make-prepared-statement 
+    `(sql:make-prepared-statement
        ,(sql:query-template parsed)
        ',(sql:query-params parsed))))
 ```
@@ -395,8 +398,8 @@ If someone writes `#regex<[invalid(>`, they get a compile error, not a runtime e
 (defvar *db* #dbconn<localhost:5432:mydb:admin>)
 
 ;; Expands to:
-;; (defvar *db* 
-;;   (db:make-connection 
+;; (defvar *db*
+;;   (db:make-connection
 ;;     :host "localhost"
 ;;     :port 5432
 ;;     :database "mydb"
@@ -406,6 +409,7 @@ If someone writes `#regex<[invalid(>`, they get a compile error, not a runtime e
 #### Evaluation
 
 **Advantages:**
+
 - ✅ Extensible by users
 - ✅ Clean scanner/parser architecture maintained
 - ✅ Expansion happens during macro phase (not read phase)
@@ -414,6 +418,7 @@ If someone writes `#regex<[invalid(>`, they get a compile error, not a runtime e
 - ✅ Package-scoped extensions possible
 
 **Disadvantages:**
+
 - ❌ Can't change tokenization behavior
 - ❌ Limited to predefined delimiters
 - ❌ Not as powerful as true reader macros
@@ -595,18 +600,18 @@ func (pm *PluginManager) LoadRuntimePlugin(path string) error {
     if err != nil {
         return err
     }
-    
+
     sym, err := plug.Lookup("ZylispPlugin")
     if err != nil {
         return err
     }
-    
+
     runtimePlugin := sym.(RuntimePlugin)
-    
+
     for _, export := range runtimePlugin.Functions() {
         pm.registerFunction(export)
     }
-    
+
     return nil
 }
 ```
@@ -620,12 +625,14 @@ func (pm *PluginManager) LoadRuntimePlugin(path string) error {
 ```
 
 **Benefits:**
+
 - ✅ No change to compilation pipeline
 - ✅ Native Go performance
 - ✅ Easy to write and test
 - ✅ Type-safe at Go level
 
 **Tradeoffs:**
+
 - ❌ Requires compiling Go code
 - ❌ Platform-specific binaries
 
@@ -644,11 +651,11 @@ import "github.com/zylisp/zylisp-lang/sexpr"
 
 func AwaitExpander(form sexpr.List, env *Env) (sexpr.SExpr, error) {
     // (await expr) expands to (channel:receive (go-async expr))
-    
+
     if len(form) != 2 {
         return nil, fmt.Errorf("await requires exactly one argument")
     }
-    
+
     return sexpr.List{
         sexpr.Symbol("channel:receive"),
         sexpr.List{
@@ -678,11 +685,13 @@ var ZylispMacros = []MacroExport{
 ```
 
 **Benefits:**
+
 - ✅ Full control over macro expansion
 - ✅ Native Go performance for complex expansion logic
 - ✅ Can implement sophisticated DSLs
 
 **Tradeoffs:**
+
 - ❌ Must understand sexpr types
 - ❌ More complex than Zylisp macros
 
@@ -706,26 +715,26 @@ type JSONLiteralReader struct{}
 
 func (j *JSONLiteralReader) CanHandle(lexer *parser.Lexer) bool {
     // Check if we're at #json{
-    return lexer.Peek() == '#' && 
+    return lexer.Peek() == '#' &&
            lexer.PeekN(1) == 'j' &&
            lexer.PeekN(5) == '{'
 }
 
 func (j *JSONLiteralReader) Read(lexer *parser.Lexer) (parser.Token, error) {
     lexer.ConsumeN(6)  // Consume #json{
-    
+
     jsonContent := lexer.ScanBalanced('{', '}')
-    
+
     // Parse JSON to Go structure
     var parsed interface{}
     err := json.Unmarshal([]byte(jsonContent), &parsed)
     if err != nil {
         return parser.Token{}, fmt.Errorf("invalid JSON: %w", err)
     }
-    
+
     // Convert to Zylisp data structure at read time
     zylispData := convertJSONToSExpr(parsed)
-    
+
     return parser.Token{
         Type:  parser.TOKEN_LITERAL,
         Value: zylispData,
@@ -762,7 +771,7 @@ func (l *Lexer) scanToken() Token {
             return macro.Read(l)
         }
     }
-    
+
     // Fall back to built-in scanning
     return l.scanBuiltinToken()
 }
@@ -785,12 +794,14 @@ func (l *Lexer) scanToken() Token {
 ```
 
 **Benefits:**
+
 - ✅ TRUE reader macros like Common Lisp
 - ✅ Can implement any syntax
 - ✅ Validation at read time
 - ✅ Native performance
 
 **Tradeoffs:**
+
 - ❌ Most complex to write
 - ❌ Can break the reader if buggy
 - ⚠️ Plugin load order matters
@@ -839,11 +850,13 @@ var ZylispTransforms = []TransformExport{
 ```
 
 **Benefits:**
+
 - ✅ Custom optimizations
 - ✅ Static analysis passes
 - ✅ Don't need to modify Zylisp core
 
 **Tradeoffs:**
+
 - ❌ Most complex plugin type
 - ❌ Need deep understanding of IR
 
@@ -858,24 +871,24 @@ var ZylispTransforms = []TransformExport{
 (project
   :name "my-app"
   :version "0.1.0"
-  
+
   :plugins [
     ;; Runtime plugins
     {:type :runtime
      :name "strings"
      :path "plugins/strings.so"}
-    
+
     ;; Macro plugins
     {:type :macro
      :name "async"
      :path "plugins/async.so"}
-    
+
     ;; Reader plugins
     {:type :reader
      :name "json-reader"
      :path "plugins/json.so"
      :priority 10}
-    
+
     ;; Transform plugins
     {:type :transform
      :name "tail-call-opt"
@@ -951,19 +964,19 @@ func (pm *PluginManager) LoadPlugin(path string) error {
     if err != nil {
         return err
     }
-    
+
     sym, err := plug.Lookup("Plugin")
     if err != nil {
         return fmt.Errorf("not a valid Zylisp plugin")
     }
-    
+
     basePlugin := sym.(Plugin)
-    
+
     if !pm.isCompatible(basePlugin.APIVersion()) {
         return fmt.Errorf("plugin API version %s incompatible with %s",
             basePlugin.APIVersion(), PluginAPIVersion)
     }
-    
+
     // Proceed with loading...
 }
 ```
@@ -1051,6 +1064,7 @@ Binary
 ```
 
 **Key points:**
+
 - ✅ Parse → Expand → Lower → Codegen pipeline intact
 - ✅ Each phase still does one job
 - ✅ Can still compile incrementally
@@ -1067,12 +1081,14 @@ Binary
 #### What We're Protecting Against
 
 **Category 1: Bugs (Recoverable)**
+
 - Panics from nil pointer dereferences
 - Index out of bounds errors
 - Type assertions that fail
 - Stack overflows
 
 **Category 2: Resource Abuse (Somewhat Containable)**
+
 - Infinite loops
 - Memory leaks
 - Goroutine leaks
@@ -1080,6 +1096,7 @@ Binary
 - CPU hogging
 
 **Category 3: Malice (Uncontainable in-process)**
+
 - Deliberate memory corruption
 - Accessing private data structures
 - Calling unsafe code
@@ -1095,6 +1112,7 @@ Go plugins run in the same address space with no memory isolation:
 - Cannot be unloaded
 
 Go does **not** provide:
+
 - Memory isolation (like Erlang processes)
 - Capability-based security
 - True sandboxing
@@ -1122,13 +1140,13 @@ func (ps *PluginSupervisor) CallWithRecovery(fn func() error) (err error) {
         if r := recover(); r != nil {
             err = fmt.Errorf("plugin panicked: %v\n%s", r, debug.Stack())
             ps.logPanic(r)
-            
+
             if ps.shouldRestart() {
                 ps.restart()
             }
         }
     }()
-    
+
     return fn()
 }
 ```
@@ -1144,17 +1162,17 @@ type SupervisedPlugin struct {
 func (sp *SupervisedPlugin) CallFunction(name string, args []interface{}) (interface{}, error) {
     var result interface{}
     var callErr error
-    
+
     err := sp.supervisor.CallWithRecovery(func() error {
         fn := sp.plugin.GetFunction(name)
         result, callErr = fn(args...)
         return callErr
     })
-    
+
     if err != nil {
         return nil, err  // Plugin panicked
     }
-    
+
     return result, callErr
 }
 ```
@@ -1169,29 +1187,31 @@ type ResourceMonitor struct {
 
 func (rm *ResourceMonitor) Check() error {
     current := runtime.NumGoroutine()
-    
+
     if current > rm.initialGoroutines * 2 {
         return fmt.Errorf("goroutine leak detected")
     }
-    
+
     var m runtime.MemStats
     runtime.ReadMemStats(&m)
-    
+
     if m.Alloc > rm.initialMemory * 2 {
         return fmt.Errorf("memory leak detected")
     }
-    
+
     return nil
 }
 ```
 
 **Benefits:**
+
 - ✅ Recovers from panics
 - ✅ Can restart plugins after crashes
 - ✅ Limits restart frequency
 - ✅ Logs failures for debugging
 
 **Limitations:**
+
 - ❌ Can't prevent memory corruption
 - ❌ Can't stop infinite loops
 - ❌ Can't contain malicious code
@@ -1233,21 +1253,21 @@ func (pp *ProcessPlugin) CallFunction(name string, args []interface{}) (interfac
         Function: name,
         Args:     args,
     }
-    
+
     if err := pp.encoder.Encode(req); err != nil {
         return nil, err
     }
-    
+
     // Receive response
     var resp PluginResponse
     if err := pp.decoder.Decode(&resp); err != nil {
         return nil, err
     }
-    
+
     if resp.Error != "" {
         return nil, errors.New(resp.Error)
     }
-    
+
     return resp.Result, nil
 }
 ```
@@ -1285,10 +1305,10 @@ type ProcessSupervisor struct {
 func (ps *ProcessSupervisor) Monitor() {
     for {
         err := ps.plugin.cmd.Wait()
-        
+
         if err != nil {
             log.Printf("Plugin process crashed: %v", err)
-            
+
             if ps.shouldRestart() {
                 ps.restart()
             } else {
@@ -1308,6 +1328,7 @@ func (ps *ProcessSupervisor) SetResourceLimits() error {
 ```
 
 **Benefits:**
+
 - ✅ True memory isolation
 - ✅ Can kill runaway processes
 - ✅ Can set resource limits (CPU, memory)
@@ -1316,12 +1337,14 @@ func (ps *ProcessSupervisor) SetResourceLimits() error {
 - ✅ Can restart cleanly
 
 **Limitations:**
+
 - ❌ Significant IPC overhead (~500x slower)
 - ❌ Can't share memory (must serialize)
 - ❌ More complex to implement
 - ❌ Process creation overhead
 
 **Performance:**
+
 - In-process call: ~100ns
 - Out-of-process call: ~50µs (500x slower)
 
@@ -1347,14 +1370,14 @@ type WASMPlugin struct {
 func (wp *WASMPlugin) Load(wasmBytes []byte) error {
     ctx := context.Background()
     wp.runtime = wazero.NewRuntime(ctx)
-    
+
     var err error
     wp.module, err = wp.runtime.InstantiateWithConfig(
         ctx,
         wasmBytes,
         wazero.NewModuleConfig(),
     )
-    
+
     return err
 }
 
@@ -1363,7 +1386,7 @@ func (wp *WASMPlugin) CallFunction(name string, args ...uint64) ([]uint64, error
     if fn == nil {
         return nil, fmt.Errorf("function %s not exported", name)
     }
-    
+
     ctx := context.Background()
     return fn.Call(ctx, args...)
 }
@@ -1374,13 +1397,13 @@ func (wp *WASMPlugin) CallFunction(name string, args ...uint64) ([]uint64, error
 ```go
 func (wp *WASMPlugin) LoadWithLimits(wasmBytes []byte, maxMemory uint32) error {
     ctx := context.Background()
-    
+
     wp.runtime = wazero.NewRuntimeWithConfig(
         ctx,
         wazero.NewRuntimeConfig().
             WithMemoryLimitPages(maxMemory), // Pages = 64KB each
     )
-    
+
     return wp.Load(wasmBytes)
 }
 ```
@@ -1395,7 +1418,7 @@ package main
 func levenshtein_distance(s1ptr, s1len, s2ptr, s2len uint32) uint32 {
     s1 := readString(s1ptr, s1len)
     s2 := readString(s2ptr, s2len)
-    
+
     // Implementation...
     return uint32(distance)
 }
@@ -1404,6 +1427,7 @@ func main() {}
 ```
 
 Build:
+
 ```bash
 tinygo build -o plugin.wasm -target=wasi plugin.go
 ```
@@ -1418,20 +1442,21 @@ func (wp *WASMPlugin) CallWithTimeout(
 ) ([]uint64, error) {
     ctx, cancel := context.WithTimeout(context.Background(), timeout)
     defer cancel()
-    
+
     fn := wp.module.ExportedFunction(name)
     results, err := fn.Call(ctx, args...)
-    
+
     if ctx.Err() == context.DeadlineExceeded {
         // WASM execution stops immediately!
         return nil, fmt.Errorf("plugin timed out")
     }
-    
+
     return results, err
 }
 ```
 
 **Benefits:**
+
 - ✅ True sandboxing (memory isolation)
 - ✅ Can enforce resource limits
 - ✅ Fast (~3-5x slower than native, not 500x)
@@ -1441,6 +1466,7 @@ func (wp *WASMPlugin) CallWithTimeout(
 - ✅ Execution can be truly interrupted
 
 **Limitations:**
+
 - ❌ More complex FFI (must marshal data)
 - ❌ TinyGo has limitations (no full reflect)
 - ❌ Can't use arbitrary Go libraries
@@ -1488,14 +1514,14 @@ const (
      :type :runtime
      :trusted true
      :isolation :recover}
-    
+
     ;; Third-party - safer
     {:name "community-lib"
      :path "plugins/community.wasm"
      :type :runtime
      :trusted false
      :isolation :wasm}
-    
+
     ;; Experimental - maximum safety
     {:name "experimental-macro"
      :path "plugins/macro"
@@ -1520,7 +1546,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
     if !crypto.Verify(sp.Path, sp.Signature, sp.PublicKey) {
         return fmt.Errorf("invalid plugin signature")
     }
-    
+
     return pm.LoadPlugin(sp.Path)
 }
 ```
@@ -1537,12 +1563,14 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 #### For Runtime Plugins
 
 **Trusted, high-performance**:
+
 ```zylisp
 (use-plugin :runtime "internal/strings.so"
   :isolation :recover)
 ```
 
 **Third-party, need safety**:
+
 ```zylisp
 (use-plugin :runtime "community/imageproc.wasm"
   :isolation :wasm
@@ -1553,12 +1581,14 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 #### For Compile-Time Plugins
 
 **Default**:
+
 ```zylisp
 (use-plugin :macro "internal/async.so"
   :isolation :recover)
 ```
 
 **Untrusted**:
+
 ```zylisp
 (use-plugin :macro "experimental/dsl.exe"
   :isolation :process
@@ -1574,6 +1604,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Goal**: Implement basic tagged literal support
 
 **Tasks**:
+
 1. Lexer modifications
    - Recognize `#identifier<content>` pattern
    - Handle balanced delimiters
@@ -1600,6 +1631,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Duration**: 2-3 weeks
 
 **Success Criteria**:
+
 - Users can define and use custom tagged literals
 - Built-in tags work correctly
 - Good error messages
@@ -1612,6 +1644,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Goal**: Enable users to write Go functions callable from Zylisp
 
 **Tasks**:
+
 1. Plugin interface definition
    - `RuntimePlugin` interface
    - `FunctionExport` structure
@@ -1642,6 +1675,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Duration**: 3-4 weeks
 
 **Success Criteria**:
+
 - Users can create and load runtime plugins
 - Plugin crashes don't crash compiler
 - Good developer experience (SDK, templates)
@@ -1654,6 +1688,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Goal**: Enable Go-based macro expanders
 
 **Tasks**:
+
 1. Macro plugin interface
    - `MacroPlugin` interface
    - `MacroExpander` function type
@@ -1673,6 +1708,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Duration**: 2-3 weeks
 
 **Success Criteria**:
+
 - Users can write Go-based macros
 - Performance acceptable (compile-time only)
 - Easy to use API
@@ -1684,6 +1720,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Goal**: Safe execution of untrusted plugins
 
 **Tasks**:
+
 1. WASM runtime integration
    - Integrate wazero
    - Load WASM modules
@@ -1709,6 +1746,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Duration**: 3-4 weeks
 
 **Success Criteria**:
+
 - WASM plugins work correctly
 - Sandboxing effective
 - Performance acceptable (3-5x slower than native)
@@ -1721,6 +1759,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Goal**: True reader macros via plugins
 
 **Tasks**:
+
 1. Reader plugin interface
    - `ReaderMacro` interface
    - Lexer access API
@@ -1740,6 +1779,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Duration**: 3-4 weeks
 
 **Success Criteria**:
+
 - Users can extend the reader
 - No performance degradation when not used
 - Safe (plugins can't break lexer)
@@ -1753,6 +1793,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Goal**: Custom IR transformations
 
 **Tasks**:
+
 1. Transform plugin interface
    - `Transform` interface
    - IR access API
@@ -1769,6 +1810,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Duration**: 4-5 weeks
 
 **Success Criteria**:
+
 - Users can add optimizations
 - No performance regression
 - Safe (transforms can't break IR)
@@ -1782,6 +1824,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Goal**: Complete plugin system
 
 **Tasks**:
+
 1. Plugin registry
    - Web service
    - Search API
@@ -1805,6 +1848,7 @@ func (pm *PluginManager) LoadSignedPlugin(sp SignedPlugin) error {
 **Duration**: 6-8 weeks
 
 **Success Criteria**:
+
 - Easy to find plugins
 - Safe to install plugins
 - Active ecosystem
