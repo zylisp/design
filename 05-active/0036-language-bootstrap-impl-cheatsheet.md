@@ -3,8 +3,8 @@ number: 0036
 title: "Zylisp Language Bootstrap Implementation Plan - Cheat Sheet"
 author: Unknown
 created: 2025-10-08
-updated: 2025-10-10
-state: Final
+updated: 2025-10-11
+state: Active
 supersedes: None
 superseded-by: None
 ---
